@@ -20,7 +20,7 @@ RF24 radio(7, 8); // CE, CSN
 #define FLAPRELAY1  4      // arduino  pin 4
 #define FLAPRELAY2  5      // arduino  pin 5
 #define SHUTTERRELAY3  6      // etc
-#define SHUTTERRELAY4  10
+#define SHUTTERRELAY4  20     // cannot use 10 as needs to be set high for NRF radio to work, see above
 
 // shutter microswitches
 
