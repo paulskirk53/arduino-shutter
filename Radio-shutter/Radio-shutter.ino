@@ -1,5 +1,5 @@
 
-// this routine receies commands from the radio master arduino - OS# CS# and SS#
+// this routine receives commands from the radio master arduino - OS# CS# and SS#
 // data is only returned by SS# - if the shutter is open return double data type = 0.0
 // else return double datatype = 1
 //
@@ -42,16 +42,17 @@ void setup()
   Serial.begin(9600);
 
   radio.begin();
-
-
-  radio.openReadingPipe(1, address);    // the 1st parameter can be any number 0 to 5 the master routine uses 1
-
+  radio.setChannel(100);
+  radio.setDataRate(RF24_250KBPS);  // set RF datarate
 
   // enable ack payload - slaves reply with data using this feature
   radio.enableAckPayload();
 
   radio.setPALevel(RF24_PA_MIN);
   radio.enableDynamicPayloads();
+
+
+  radio.openReadingPipe(1, address);    // the 1st parameter can be any number 1 to 5 the master routine uses 1
   radio.startListening();
 
   // ALL THE RELAYS ARE ACTIVE LOW, SO SET THEM ALL HIGH AS THE INITIAL STATE
@@ -79,7 +80,10 @@ void setup()
 
 void loop()
 {
-
+  
+while (!radio.available()){
+  
+}
   if (radio.available())
   {
     char text[32] = "";             // used to store what the master node sent e.g AZ hash SA hash
@@ -93,29 +97,31 @@ void loop()
     Serial.println(message);
     Serial.println("--------------------------------------------------");
 
-    if (text[1] == 'C' && text[2] == 'S' && text[3] == '#') // close shutter command
+    if (text[0] == 'C' && text[1] == 'S' && text[2] == '#') // close shutter command
     {
       Serial.print ("received CS");
       close_shutter();
 
     }
-// populate for OS and CS
+    // populate for OS and CS
 
-  if (text[1] == 'O' && text[2] == 'S' && text[3] == '#') // close shutter command
+    if (text[0] == 'O' && text[1] == 'S' && text[2] == '#') // close shutter command
     {
       Serial.print ("received CS");
       open_shutter();
 
     }
-      if (text[1] == 'S' && text[2] == 'S' && text[3] == '#') // close shutter command
+    if (text[0] == 'S' && text[1] == 'S' && text[2] == '#') // close shutter command
     {
       Serial.print ("received CS");
       shutter_status();
 
     }
 
+    text[0] = 0;   // set to null character
+    text[1] = 0;
+    text[2] = 0;
 
-    
   } //endif radio available
 
 } // end void loop
