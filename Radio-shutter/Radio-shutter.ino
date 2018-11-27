@@ -81,9 +81,12 @@ void setup()
 void loop()
 {
   
-while (!radio.available()){
-  
+while (!radio.available())
+{
+shutter_status();  
 }
+
+radio.writeAckPayload(1, &message, sizeof(message));
   if (radio.available())
   {
     char text[32] = "";             // used to store what the master node sent e.g AZ hash SA hash
