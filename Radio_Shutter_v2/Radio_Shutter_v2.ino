@@ -6,7 +6,7 @@
 
 #include <SoftwareSerial.h>
 #include <SPI.h>
-//#include <nRF24L01.h>               // shown to be not required
+#include <nRF24L01.h>               // shown to be not required
 #include <RF24.h>
 
 //for nrf to work, pin 10 must be high if it is not used as an nrf connecton
@@ -30,9 +30,9 @@ RF24 radio(7, 8); // CE, CSN
 #define Flapclosed     13
 
 
-const byte address[6] = "00002";            // 00002 the address of this arduino board/ transmitter
-
-double message = 0.0;
+const byte thisaddress[6] = "00002";            // 00002 the address of this arduino board/ transmitter
+const byte masterNodeaddress[6] = "00000";            // 00002 the address of this arduino board/ transmitter
+char message[10] = "";
 String receivedData;
 
 void setup()
@@ -52,7 +52,7 @@ void setup()
   radio.enableDynamicPayloads();
 
 
-  radio.openReadingPipe(1, address);    // the 1st parameter can be any number 1 to 5 the master routine uses 1
+  radio.openReadingPipe(1, thisaddress);    // the 1st parameter can be any number 1 to 5 the master routine uses 1
   radio.startListening();
 
   // ALL THE RELAYS ARE ACTIVE LOW, SO SET THEM ALL HIGH AS THE INITIAL STATE
@@ -80,13 +80,14 @@ void setup()
 
 void loop()
 {
-  
-while (!radio.available())
-{
-shutter_status();  
-}
+  radio.startListening();
+  delay(20);                    // just in case hardware needs time before next instuction exec
+  while (!radio.available())
+  {
+    //do nothing
+  }
 
-radio.writeAckPayload(1, &message, sizeof(message));
+
   if (radio.available())
   {
     char text[32] = "";             // used to store what the master node sent e.g AZ hash SA hash
@@ -96,9 +97,7 @@ radio.writeAckPayload(1, &message, sizeof(message));
 
     Serial.print("The text received from Mster was: ");
     Serial.println(text);
-    Serial.print("this is the shutter node - the value of message is ");
-    Serial.println(message);
-    Serial.println("--------------------------------------------------");
+    Serial.print("this is the shutter node  ");
 
     if (text[0] == 'C' && text[1] == 'S' && text[2] == '#') // close shutter command
     {
@@ -110,13 +109,13 @@ radio.writeAckPayload(1, &message, sizeof(message));
 
     if (text[0] == 'O' && text[1] == 'S' && text[2] == '#') // close shutter command
     {
-      Serial.print ("received CS");
+      Serial.print ("received OS");
       open_shutter();
 
     }
     if (text[0] == 'S' && text[1] == 'S' && text[2] == '#') // close shutter command
     {
-      Serial.print ("received CS");
+      Serial.print ("received SS");
       shutter_status();
 
     }
@@ -243,14 +242,34 @@ void shutter_status()
   shutterstatus = digitalRead(Shutterclosed);
   if (shutterstatus == true)
   {
-    message = 1.0;
+    message [0] = 'C';
+    message [1] = 'L';
+    message [2] = 'O';
+    message [3] = 'S';
+    message [4] = 'E';
+    message [5] = 'D';
+    message [6] = '#';
     //Serial.println( "closed#");  // return closed to driver modded for radio
+    Serial.println("the value of shutter status is");
+    Serial.println(message);
+    Serial.println("--------------------------------------------------");
+
   }
   else
   {
     //Serial.println( "open#");   // return open to driver  modded for radio
-    message = 0.0;
+    message [0] = 'O';
+    message [1] = 'P';
+    message [2] = 'E';
+    message [3] = 'N';
+    message [4] = '#';
+    Serial.println("the value of shutter status is");
+    Serial.println(message);
+    Serial.println("--------------------------------------------------");
   }
+  radio.stopListening();
+  radio.openWritingPipe(masterNodeaddress);
+  radio.write(&message, sizeof(message));
 
 }
 
