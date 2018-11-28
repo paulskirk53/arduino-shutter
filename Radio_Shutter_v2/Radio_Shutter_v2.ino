@@ -1,7 +1,7 @@
 
 // this routine receives commands from the radio master arduino - OS# CS# and SS#
-// data is only returned by SS# - if the shutter is open return double data type = 0.0
-// else return double datatype = 1
+// data is only returned by SS# - if the shutter is open return char message 'open' or 'closed'
+// 
 //
 
 #include <SoftwareSerial.h>
