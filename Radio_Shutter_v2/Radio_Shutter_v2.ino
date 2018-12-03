@@ -30,8 +30,8 @@ RF24 radio(7, 8); // CE, CSN
 #define Flapclosed     13
 
 
-const byte thisaddress[6] =       "00002";            // 00002 the address of this arduino board/ transmitter
-const byte masterNodeaddress[6] = "00000";
+const byte thisaddress[6] =       "shutt";            // 00002 the address of this arduino board/ transmitter
+const byte masterNodeaddress[6] = "mastr";
 char message[10] = "";
 String receivedData;
 
