@@ -48,7 +48,7 @@ void setup()
   // enable ack payload - slaves reply with data using this feature
   radio.enableAckPayload();
 
-  radio.setPALevel(RF24_PA_MIN);
+  radio.setPALevel(RF24_PA_LOW);
   radio.enableDynamicPayloads();
   radio.setRetries(15, 15);
 
