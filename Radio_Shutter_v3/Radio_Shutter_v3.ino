@@ -1,3 +1,6 @@
+//to do pin 11 is no longer used and pin 9 is now shutter_limit_switch 
+//change the arduino board connections to the terminal block to reflect this and then delete these lines
+//
 //change text to command_from_master to improve code undestanding
 // this routine receives commands from the radio master arduino - OS# CS# and SS#
 // data is only returned by SS# - if the shutter is open return char message 'open' or 'closed'
@@ -24,16 +27,20 @@ RF24 radio(7, 8); // CE, CSN
 
 // shutter microswitches
 
-#define Shutteropen    11
-#define Shutterclosed  9
+// #define Shutteropen    11    //no longer required but still used until both the OPEN AND CLOSE routines are modelled - only one done so far
+// #define Shutterclosed  9
 #define Flapopen       12
 #define Flapclosed     13
+#define shutter_limit_switch  9             // change this to the right pin
 
 
 const byte thisaddress[6] =       "shutt";            // 00002 the address of this arduino board/ transmitter
 const byte masterNodeaddress[6] = "mastr";
 char message[10] = "";
 String receivedData;
+bool shutterstatus = true;
+String last_state = "closed";
+const int number_of_revs = 5;   // set this empirically depending upon number of turns of the winch required to open / close the shutter
 
 void setup()
 {
@@ -70,8 +77,8 @@ void setup()
   pinMode(SHUTTERRELAY4, OUTPUT);
 
   // initialsie the pins for shutter and flap microswitches - input_pullup sets initial state to 1
-  pinMode(Shutteropen, INPUT_PULLUP);
-  pinMode(Shutterclosed, INPUT_PULLUP);
+  pinMode(shutter_limit_switch, INPUT_PULLUP);
+  
   pinMode (Flapopen, INPUT_PULLUP);
   pinMode (Flapclosed, INPUT_PULLUP);
 
@@ -99,7 +106,7 @@ void loop()
 
 
     Serial.println("this is the shutter node  ");
-    Serial.print("The text received from Mster was: ");
+    Serial.print("The text received from Master was: ");
     Serial.println(text);
 
 
@@ -170,23 +177,37 @@ void close_shutter()
 {
   // commands to close shutters
   // commands to close shutters reverse POLARITY TO BOTH motors
-  while (digitalRead(Shutterclosed) == HIGH)    //high when not pushed closed, so use the NO connection to arduino for the closed state switch
-  {
-    digitalWrite(SHUTTERRELAY3, HIGH);          // RETRACTING POLARITY -  shutter - cloes first
-    digitalWrite(SHUTTERRELAY4, LOW);
-    digitalRead(Shutterclosed);
-    Serial.println ("Waiting for Shutter to close  " + String(digitalRead( Shutterclosed)));
-    //delay(1000);
-    // temporary code beow to allow interruption of the while loop whilst testing
-    // receivedData = Serial1.readStringUntil('#'); // read a string from HC06
-    // if (receivedData.startsWith("BR", 0))
-    // {
-    // break;
-    //}
-    // end temporary code
-  }   // end while
+ 
+ 
+ 
+ if (last_state = "open");
+ {
+	 int revcount = 0;
+	 
+	 while (last_state = "open")
+	 {
+		digitalWrite(SHUTTERRELAY3, HIGH);          // closing POLARITY shutter - closes first
+		digitalWrite(SHUTTERRELAY4, LOW);
+		 // now poll the limit switch for activations as the pulley rotates
+		 if (digitalRead(shutter_limit_switch) == HIGH)
+		 {
+			 revcount++;
+			 if (revcount >= number_of_revs)
+			 {
+				 last_state = "closed";
+				 initialise_relays();  // TURN THE POWER OFF
+				 shutterstatus=false;  // this variable is set in the V2 code and the shutter status routine will need a small change
+			 }     // endif revcount
+
+		 }   //  endif digital read
+
+	 }  // enwhile
+
+ }
+
 
   initialise_relays();  // TURN THE POWER OFF
+
 
   while (digitalRead(Flapclosed) == HIGH)       //high when not pushed closed, so use the NO connection to arduino for the closed state switch
   {
@@ -194,22 +215,15 @@ void close_shutter()
     digitalWrite(FLAPRELAY2, LOW);           // linear actuator has to extend to close the flap
     digitalRead(Flapclosed);
     Serial.println (" Waiting for flap to close " + String(digitalRead( Flapclosed)));
-    //delay(1000);
-    // temporary code beow to allow interruption of the while loop whilst testing
-    //receivedData = Serial1.readStringUntil('#'); // read a string from HC06
-    // if (receivedData.startsWith("BR", 0))
-    //{
-    //break;
-    //}
-    // end temporary code
+   
   }   // endwhile flapclosed
-  initialise_relays();  // TURN THE POWER OFF
+  
 
   receivedData = "";
 
   // The flap and shutter are now closed so set the relays back to initial status -
 
-
+  initialise_relays();  // TURN THE POWER OFF
 
 } // end  CS
 
@@ -230,36 +244,35 @@ void open_shutter()
     digitalWrite(FLAPRELAY2, HIGH);            // retracts in order to open the flap
     digitalRead(Flapopen);                     // will go LOW to signify flap is fully open i.e. the switch has ben pushed closed
     Serial.println ("Waiting for Flap to open LOW HIGH  " + String(digitalRead( Flapopen)));
-    //delay(1000);
-    /* temporary code beow to allow interruption of the while loop whilst testing
-      receivedData = Serial.readStringUntil('#'); // read a string from HC06
-      if (receivedData.startsWith("BR", 0))
-      {
-      break;
-      }
-      // end temporary code
-    */
+   
   }
   initialise_relays();  // TURN THE POWER OFF
 
+
   // then open the shutter
-  while (digitalRead(Shutteropen) == HIGH)      //high when not pushed closed, so use the NO connection to arduino for the open state switch
+
+  if (last_state = "closed");
   {
-    digitalWrite(SHUTTERRELAY3, LOW);          // EXTENDING polarity -  shutter - opens second
-    digitalWrite(SHUTTERRELAY4, HIGH);
-    digitalRead(Shutteropen);                  // will go LOW to signify shutter is fully open i.e. the switch has been pushed closed
-    Serial.println (" waiting for Shutter to open  " + String(digitalRead( Shutteropen)));
-    // delay(1000);
-    /* temporary code beow to allow interruption of the while loop whilst testing
-      receivedData = Serial1.readStringUntil('#'); // read a string from HC06
-      if (receivedData.startsWith("BR", 0))
-      {
-      break;
-      }
-      end temporary code
-    */
+	  int revcount = 0;
+	  
+	  while (last_state = "closed")
+	  {
+		  digitalWrite(SHUTTERRELAY3, LOW);          // these two lines from version 2 - they set the motor direction
+		  digitalWrite(SHUTTERRELAY4, HIGH);
+		  // now poll the limit switch for activations as the pulley rotates
+		  if (digitalRead(shutter_limit_switch) == HIGH)
+		  {
+			  revcount++;
+			  if (revcount >= number_of_revs)
+			  {
+				  last_state = "open";
+				  initialise_relays();  // TURN THE POWER OFF
+				  shutterstatus=false;  // this variable is set in the V2 code and the shutter status routine will need a small change
+			  }
+		  }
+	  }
+
   }
-  initialise_relays();  // TURN THE POWER OFF
 
   receivedData = "";
 
@@ -267,8 +280,8 @@ void open_shutter()
 
 void shutter_status()
 {
-  bool shutterstatus = true;
-  shutterstatus = digitalRead(Shutterclosed);
+  //bool shutterstatus = true;
+  //shutterstatus = digitalRead(Shutterclosed);   // now set in shutter open and close routines
   if (shutterstatus == true)
   {
     message [0] = 'C';
