@@ -137,7 +137,7 @@ void loop()
       radio.openWritingPipe(masterNodeaddress);
       radio.stopListening();
 
-      delay(50);   // to alow the master to change from tx to rx
+      delay(50);   // to allow the master to change from tx to rx
       bool rslt =       radio.write(&message, sizeof(message));
       radio.startListening();          //straight away after write to master, in case anothe message is sent
 
@@ -189,8 +189,9 @@ void close_shutter()
 		digitalWrite(SHUTTERRELAY3, HIGH);          // closing POLARITY shutter - closes first
 		digitalWrite(SHUTTERRELAY4, LOW);
 		 // now poll the limit switch for activations as the pulley rotates
-		 if (digitalRead(shutter_limit_switch) == HIGH)
+		 if (digitalRead(shutter_limit_switch) == LOW)  // the limit switch has been pressed by the rotating cam
 		 {
+		 delay(3000);  // wait for the switch to open as the rotating cam moves on
 			 revcount++;
 			 if (revcount >= number_of_revs)
 			 {
@@ -201,7 +202,7 @@ void close_shutter()
 
 		 }   //  endif digital read
 
-	 }  // enwhile
+	 }  // endwhile
 
  }
 
@@ -260,8 +261,9 @@ void open_shutter()
 		  digitalWrite(SHUTTERRELAY3, LOW);          // these two lines from version 2 - they set the motor direction
 		  digitalWrite(SHUTTERRELAY4, HIGH);
 		  // now poll the limit switch for activations as the pulley rotates
-		  if (digitalRead(shutter_limit_switch) == HIGH)
+		  if (digitalRead(shutter_limit_switch) == LOW)   // the limit switch has been pressed by the rotating cam
 		  {
+		  delay(3000);  // wait for the switch to open as the rotating cam moves on
 			  revcount++;
 			  if (revcount >= number_of_revs)
 			  {
