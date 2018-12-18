@@ -8,14 +8,7 @@
 //
 
 #include <SoftwareSerial.h>
-#include <SPI.h>
-#include <nRF24L01.h>               // shown to be not required
-#include <RF24.h>
 
-//for nrf to work, pin 10 must be high if it is not used as an nrf connecton
-#define PIN10  10
-
-RF24 radio(7, 8); // CE, CSN
 
 // pin definitions for shutter relays
 
@@ -27,46 +20,28 @@ RF24 radio(7, 8); // CE, CSN
 
 // shutter microswitches
 
-// #define Shutteropen    11    //no longer required but still used until both the OPEN AND CLOSE routines are modelled - only one done so far
-// #define Shutterclosed  9
-#define Flapopen       12
-#define Flapclosed     13
-#define shutter_limit_switch  9             // change this to the right pin
+//Pin 11 was defined here previously, but no longer used. It is still brought out from the arduino as pin 11 blue wire to the terminal block
+#define Flapopen       12                    //connected to new limit mechanism with aluminium and wood disc actuator
+#define Flapclosed     13                    //connected to new limit mechanism with aluminium and wood disc actuator
+#define shutter_limit_switch  9             // now used to detect transitions on the winch cam
+#define open_shutter_command 46             //input pin
+#define close_shutter_command 47            //input pin
+#define shutter_status 48                   //OUTPUT pin
 
-
-const byte thisaddress[6] =       "shutt";            // 00002 the address of this arduino board/ transmitter
-const byte masterNodeaddress[6] = "mastr";
-char message[10] = "";
-String receivedData;
-bool shutterstatus = true;
 String last_state = "closed";
 const int number_of_revs = 5;   // set this empirically depending upon number of turns of the winch required to open / close the shutter
 
 void setup()
 {
 
-  pinMode(PIN10, OUTPUT);                 // this is an NRF24L01 requirement if pin 10 is not used
+  
   Serial.begin(9600);
 
-  radio.begin();
-  radio.setChannel(100);
-  radio.setDataRate(RF24_250KBPS);  // set RF datarate
-
-  // enable ack payload - slaves reply with data using this feature
-  radio.enableAckPayload();
-
-  radio.setPALevel(RF24_PA_LOW);
-  radio.enableDynamicPayloads();
-  radio.setRetries(15, 15);
-
-
-  radio.openReadingPipe(1, thisaddress);    // the 1st parameter can be any number 1 to 5 the master routine uses 1
-  radio.startListening();
-
+  
   // ALL THE RELAYS ARE ACTIVE LOW, SO SET THEM ALL HIGH AS THE INITIAL STATE
   // Then define the pin modes. This avoids pins being low (activates realays) on power reset.
 
-  initialise_relays();      // sets all the relay pins HIGH
+  initialise_relays();      // sets all the relay pins HIGH for power off state
 
   // pinmodes for shutter and flap relays
   // Initialise the Arduino data pins for OUTPUT
@@ -82,7 +57,12 @@ void setup()
   pinMode (Flapopen, INPUT_PULLUP);
   pinMode (Flapclosed, INPUT_PULLUP);
 
+  // pinmodes for the open and close command pins and the shutter status pin
 
+  pinMode(open_shutter_command, INPUT);
+  pinMode(close_shutter_command, INPUT);
+  pinMode(shutter_status, OUTPUT);           //this routine sets this pin and it is read by the command processor arduino
+  digitalWrite(shutter_status, HIGH);        // HIGH means closed
 
 }  // end setup
 
@@ -90,77 +70,24 @@ void loop()
 {
   //  already done in setup radio.openReadingPipe(1, thisaddress);    // 00002
  // radio.startListening();
-
-  while (!radio.available())
-  {
-    //do nothing
-  }
-
-
-  if (radio.available())
-  {
-    char text[32] = "";             // used to store what the master node sent e.g AZ hash SA hash
-    //shutter_status();
-
-    radio.read(&text, sizeof(text));
-
-
-    Serial.println("this is the shutter node  ");
+   Serial.println("this is the shutter node  ");
     Serial.print("The text received from Master was: ");
-    Serial.println(text);
+    Serial.println("text");
 
 
-    if (text[0] == 'C' && text[1] == 'S' && text[2] == '#') // close shutter command
+    if (digitalRead(open_shutter_command) == HIGH) // open shutter command
     {
-      //Serial.print ("received CS");
-      close_shutter();
-
-    }
-
-
-    if (text[0] == 'O' && text[1] == 'S' && text[2] == '#') // open shutter command
-    {
-      //Serial.print ("received OS");
+      Serial.print ("received OS");              // for testing
       open_shutter();
-
+	  digitalWrite(shutter_status, LOW) ;         // set the status pin - low is open
     }
-    if (text[0] == 'S' && text[1] == 'S' && text[2] == '#') //  shutter status command
+    
+    if (digitalRead(close_shutter_command) == HIGH) // close shutter command
     {
-
-      shutter_status();
-
-      Serial.println("the value of shutter status is ");
-      Serial.print(message);
-      Serial.println("--------------------------------------------------");
-
-
-      radio.openWritingPipe(masterNodeaddress);
-      radio.stopListening();
-
-      delay(50);   // to allow the master to change from tx to rx
-      bool rslt =       radio.write(&message, sizeof(message));
-      radio.startListening();          //straight away after write to master, in case anothe message is sent
-
-      if (rslt)
-    {
-      Serial.println("result of shutter Tx was true");
-      }
-      else
-      {
-        Serial.println("result of shutter Tx was error");
-      }
-
-      for ( int i = 0; i < 10; i++)                //initialise the message array back to nulls
-    {
-      message[i] = 0;
-      }                                           //end for
-    }                                             //endif SS
-
-    text[0] = 0;   // set to null character
-    text[1] = 0;
-    text[2] = 0;
-
-  } //endif radio available
+	    //Serial.print ("received CS");
+	    close_shutter();
+	    digitalWrite(shutter_status, HIGH) ;      // set the status pin - high is closed
+    }
 
 } // end void loop
 
@@ -197,7 +124,6 @@ void close_shutter()
 			 {
 				 last_state = "closed";
 				 initialise_relays();  // TURN THE POWER OFF
-				 shutterstatus=false;  // this variable is set in the V2 code and the shutter status routine will need a small change
 			 }     // endif revcount
 
 		 }   //  endif digital read
@@ -219,8 +145,6 @@ void close_shutter()
    
   }   // endwhile flapclosed
   
-
-  receivedData = "";
 
   // The flap and shutter are now closed so set the relays back to initial status -
 
@@ -269,50 +193,14 @@ void open_shutter()
 			  {
 				  last_state = "open";
 				  initialise_relays();  // TURN THE POWER OFF
-				  shutterstatus=false;  // this variable is set in the V2 code and the shutter status routine will need a small change
 			  }
 		  }
 	  }
 
   }
 
-  receivedData = "";
+  
 
 }// end  OS
 
-void shutter_status()
-{
-  //bool shutterstatus = true;
-  //shutterstatus = digitalRead(Shutterclosed);   // now set in shutter open and close routines
-  if (shutterstatus == true)
-  {
-    message [0] = 'C';
-    message [1] = 'L';
-    message [2] = 'O';
-    message [3] = 'S';
-    message [4] = 'E';
-    message [5] = 'D';
-    message [6] = '#';
-    //Serial.println( "closed#");  // return closed to driver modded for radio
-    //Serial.println("the value of shutter status is");
-    //  Serial.println(message);
-    //    Serial.println("--------------------------------------------------");
 
-  }
-  else
-  {
-    //Serial.println( "open#");   // return open to driver  modded for radio
-    message [0] = 'O';
-    message [1] = 'P';
-    message [2] = 'E';
-    message [3] = 'N';
-    message [4] = '#';
-    message [5] = 0;
-    message [6] = 0;
-    //Serial.println("the value of shutter status is");
-    //  Serial.println(message);
-    //    Serial.println("--------------------------------------------------");
-  }
-
-
-}
