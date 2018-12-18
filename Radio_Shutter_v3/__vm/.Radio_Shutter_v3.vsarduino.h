@@ -22,7 +22,6 @@
 void initialise_relays();
 void close_shutter();
 void open_shutter();
-void shutter_status();
 
 #include "pins_arduino.h" 
 #include "arduino.h"
