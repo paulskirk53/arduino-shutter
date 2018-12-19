@@ -34,7 +34,6 @@ const int number_of_revs = 5;   // set this empirically depending upon number of
 void setup()
 {
 
-  
   Serial.begin(9600);
 
   
@@ -63,17 +62,13 @@ void setup()
   pinMode(close_shutter_command, INPUT);
   pinMode(shutter_status, OUTPUT);           //this routine sets this pin and it is read by the command processor arduino
   digitalWrite(shutter_status, HIGH);        // HIGH means closed
+   Serial1.println( "  exit setup ");
 
 }  // end setup
 
 void loop()
 {
-  //  already done in setup radio.openReadingPipe(1, thisaddress);    // 00002
- // radio.startListening();
-   //Serial.println("this is the shutter node  ");
-    //Serial.print("The text received from Master was: ");
-    //Serial.println("text");
-
+ 
 
     if (digitalRead(open_shutter_command) == HIGH) // open shutter command
     {
