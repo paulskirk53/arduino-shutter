@@ -70,9 +70,9 @@ void loop()
 {
   //  already done in setup radio.openReadingPipe(1, thisaddress);    // 00002
  // radio.startListening();
-   Serial.println("this is the shutter node  ");
-    Serial.print("The text received from Master was: ");
-    Serial.println("text");
+   //Serial.println("this is the shutter node  ");
+    //Serial.print("The text received from Master was: ");
+    //Serial.println("text");
 
 
     if (digitalRead(open_shutter_command) == HIGH) // open shutter command
@@ -93,7 +93,7 @@ void loop()
 
 void initialise_relays()
 {
-  //  Serial1.println( "  Initialising relays ");
+    Serial1.println( "  Initialising relays ");
   digitalWrite(FLAPRELAY1, HIGH);
   digitalWrite(FLAPRELAY2, HIGH);
   digitalWrite(SHUTTERRELAY3, HIGH);
@@ -105,7 +105,7 @@ void close_shutter()
   // commands to close shutters
   // commands to close shutters reverse POLARITY TO BOTH motors
  
- 
+  Serial1.println( "  closing shutter ");
  
  if (last_state = "open");
  {
@@ -129,7 +129,9 @@ void close_shutter()
 		 }   //  endif digital read
 
 	 }  // endwhile
-
+	  Serial1.println( "  end of shutter closed routine ");
+	   Serial1.print( "Rev count is : ");
+	    Serial1.println( revcount);
  }
 
 
@@ -196,7 +198,9 @@ void open_shutter()
 			  }
 		  }
 	  }
-
+ Serial1.println( "  end of shutter open routine ");
+ Serial1.print( "Rev count is : ");
+ Serial1.println( revcount);
   }
 
   
