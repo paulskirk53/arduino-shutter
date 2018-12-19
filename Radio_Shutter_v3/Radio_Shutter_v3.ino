@@ -62,7 +62,7 @@ void setup()
   pinMode(close_shutter_command, INPUT);
   pinMode(shutter_status, OUTPUT);           //this routine sets this pin and it is read by the command processor arduino
   digitalWrite(shutter_status, HIGH);        // HIGH means closed
-   Serial1.println( "  exit setup ");
+   Serial.println( "  exit setup ");
 
 }  // end setup
 
@@ -88,7 +88,7 @@ void loop()
 
 void initialise_relays()
 {
-    Serial1.println( "  Initialising relays ");
+    Serial.println( "  Initialising relays ");
   digitalWrite(FLAPRELAY1, HIGH);
   digitalWrite(FLAPRELAY2, HIGH);
   digitalWrite(SHUTTERRELAY3, HIGH);
@@ -100,7 +100,7 @@ void close_shutter()
   // commands to close shutters
   // commands to close shutters reverse POLARITY TO BOTH motors
  
-  Serial1.println( "  closing shutter ");
+  Serial.println( "  closing shutter ");
  
  if (last_state = "open");
  {
@@ -124,9 +124,9 @@ void close_shutter()
 		 }   //  endif digital read
 
 	 }  // endwhile
-	  Serial1.println( "  end of shutter closed routine ");
-	   Serial1.print( "Rev count is : ");
-	    Serial1.println( revcount);
+	  Serial.println( "  end of shutter closed routine ");
+	   Serial.print( "Rev count is : ");
+	    Serial.println( revcount);
  }
 
 
@@ -159,7 +159,7 @@ void open_shutter()
 
   // Open the flap first
 
-  //      Serial1.println("receivedData = " + receivedData);     // prints to HC06
+ 
   while (digitalRead(Flapopen) == HIGH)         //high when not pushed closed, so use the NO connection to arduino for the open state switch
   {
     digitalWrite(FLAPRELAY1, LOW);             // retracting polarity - Flap opens first - the mechanics means that the actuator
@@ -193,9 +193,9 @@ void open_shutter()
 			  }
 		  }
 	  }
- Serial1.println( "  end of shutter open routine ");
- Serial1.print( "Rev count is : ");
- Serial1.println( revcount);
+ Serial.println( "  end of shutter open routine ");
+ Serial.print( "Rev count is : ");
+ Serial.println( revcount);
   }
 
   
