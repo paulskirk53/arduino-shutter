@@ -152,10 +152,7 @@ void close_shutter()
 
 void open_shutter()
 {
-  // //there may be a problem if the SHUTTER is not open by the time the flap relay actuates
-  //
-
-  // commands to open shutters OPENING POLARITY TO BOTH motors note active LOW ********************************
+  
 
   // Open the flap first
 
@@ -165,9 +162,12 @@ void open_shutter()
     digitalWrite(FLAPRELAY1, LOW);             // retracting polarity - Flap opens first - the mechanics means that the actuator
     digitalWrite(FLAPRELAY2, HIGH);            // retracts in order to open the flap
     digitalRead(Flapopen);                     // will go LOW to signify flap is fully open i.e. the switch has ben pushed closed
-    Serial.println ("Waiting for Flap to open LOW HIGH  " + String(digitalRead( Flapopen)));
+    Serial.println ("Waiting for Flap to open  " + String(digitalRead( Flapopen)));
    
   }
+
+  Serial.println ("Flap now open  ");
+
   initialise_relays();  // TURN THE POWER OFF
 
 
@@ -186,6 +186,9 @@ void open_shutter()
 		  {
 		  delay(3000);  // wait for the switch to open as the rotating cam moves on
 			  revcount++;
+			  Serial.print( "Rev count is : ");
+			  Serial.println( revcount);
+
 			  if (revcount >= number_of_revs)
 			  {
 				  last_state = "open";
@@ -194,8 +197,9 @@ void open_shutter()
 		  }
 	  }
  Serial.println( "  end of shutter open routine ");
- Serial.print( "Rev count is : ");
+ Serial.print( "ending Rev count is : ");
  Serial.println( revcount);
+
   }
 
   
