@@ -114,6 +114,8 @@ void close_shutter()
 		 {
 		 delay(3000);  // wait for the switch to open as the rotating cam moves on
 			 revcount++;
+			 Serial.print( "Rev count is : ");
+			 Serial.println( revcount);
 			 if (revcount >= number_of_revs)
 			 {
 				 last_state = "closed";
@@ -140,8 +142,10 @@ void close_shutter()
     Serial.println (" Waiting for flap to close " + String(digitalRead( Flapclosed)));
    
   }   // endwhile flapclosed
-  
 
+  
+  Serial.println (" Flap now closed " );
+  Serial.println( "  end of shutter closed routine ");
   // The flap and shutter are now closed so set the relays back to initial status -
 
   initialise_relays();  // TURN THE POWER OFF
@@ -168,6 +172,7 @@ void open_shutter()
   }
 
   Serial.println ("Flap now open  ");
+  
 
   initialise_relays();  // TURN THE POWER OFF
 
