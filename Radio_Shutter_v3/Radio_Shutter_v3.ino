@@ -101,7 +101,7 @@ void close_shutter()
  
   Serial.println( "  closing shutter ");
  
- if (last_state = "open");
+ if (last_state == "open");
  {
 	 int revcount = 0;
 	 
@@ -174,7 +174,7 @@ void open_shutter()
 
   // then open the shutter
 
-  if (last_state = "closed");
+  if (last_state == "closed");
   {
 	  int revcount = 0;
 	  
