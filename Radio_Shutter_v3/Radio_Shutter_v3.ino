@@ -76,6 +76,7 @@ void loop()
          Serial.print ("received OS");              // for testing
          open_shutter();
 	     digitalWrite(shutter_status, LOW) ;        // set the status pin - low is open
+		 last_state= "open";
         }
 	}
     
@@ -86,6 +87,7 @@ void loop()
 	      //Serial.print ("received CS");
 	      close_shutter();
 	      digitalWrite(shutter_status, HIGH) ;     // set the status pin - high is closed
+		  last_state= "closed";
         }
 	}
 
@@ -124,7 +126,7 @@ void close_shutter()
 			 Serial.println( revcount);
 			 if (revcount >= number_of_revs)
 			 {
-				 last_state = "closed";
+				 //last_state = "closed";
 				 initialise_relays();  // TURN THE POWER OFF
 			 }     // endif revcount
 
@@ -203,7 +205,7 @@ void open_shutter()
 
 			  if (revcount >= number_of_revs)
 			  {
-				  last_state = "open";
+				 // last_state = "open";
 				  initialise_relays();  // TURN THE POWER OFF
 			  }
 		  }
