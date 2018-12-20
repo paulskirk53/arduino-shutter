@@ -105,7 +105,7 @@ void close_shutter()
  {
 	 int revcount = 0;
 	 
-	 while (last_state = "open")
+	 while (last_state == "open")
 	 {
 		digitalWrite(SHUTTERRELAY3, HIGH);          // closing POLARITY shutter - closes first
 		digitalWrite(SHUTTERRELAY4, LOW);
@@ -149,6 +149,8 @@ void close_shutter()
 } // end  CS
 
 
+
+
 void open_shutter()
 {
   
@@ -176,7 +178,7 @@ void open_shutter()
   {
 	  int revcount = 0;
 	  
-	  while (last_state = "closed")
+	  while (last_state == "closed")
 	  {
 		  digitalWrite(SHUTTERRELAY3, LOW);          // these two lines from version 2 - they set the motor direction
 		  digitalWrite(SHUTTERRELAY4, HIGH);
