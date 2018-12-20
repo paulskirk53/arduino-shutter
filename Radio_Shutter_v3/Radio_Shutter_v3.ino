@@ -51,15 +51,14 @@ void setup()
   pinMode(SHUTTERRELAY4, OUTPUT);
 
   // initialsie the pins for shutter and flap microswitches - input_pullup sets initial state to 1
-  pinMode(shutter_limit_switch, INPUT_PULLUP);
-  
+  pinMode(shutter_limit_switch, INPUT_PULLUP);  
   pinMode (Flapopen, INPUT_PULLUP);
   pinMode (Flapclosed, INPUT_PULLUP);
 
   // pinmodes for the open and close command pins and the shutter status pin
 
-  pinMode(open_shutter_command, INPUT);
-  pinMode(close_shutter_command, INPUT);
+  pinMode(open_shutter_command, INPUT_PULLUP);
+  pinMode(close_shutter_command, INPUT_PULLUP);
   pinMode(shutter_status, OUTPUT);           //this routine sets this pin and it is read by the command processor arduino
   digitalWrite(shutter_status, HIGH);        // HIGH means closed
    Serial.println( "  exit setup ");
@@ -70,14 +69,14 @@ void loop()
 {
  
 
-    if (digitalRead(open_shutter_command) == HIGH) // open shutter command
+    if (digitalRead(open_shutter_command) == LOW) // open shutter command
     {
       Serial.print ("received OS");              // for testing
       open_shutter();
 	  digitalWrite(shutter_status, LOW) ;         // set the status pin - low is open
     }
     
-    if (digitalRead(close_shutter_command) == HIGH) // close shutter command
+    if (digitalRead(close_shutter_command) == LOW) // close shutter command
     {
 	    //Serial.print ("received CS");
 	    close_shutter();
