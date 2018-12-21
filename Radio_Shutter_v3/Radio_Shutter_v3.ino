@@ -1,7 +1,6 @@
-//to do pin 11 is no longer used and pin 9 is now shutter_limit_switch 
-//change the arduino board connections to the terminal block to reflect this and then delete these lines
+//TO DO
+// SET THE CONST number_of_revs to whatever is needed to work the shutter
 //
-//change text to command_from_master to improve code undestanding
 // this routine receives commands from the radio master arduino - OS# CS# and SS#
 // data is only returned by SS# - if the shutter is open return char message 'open' or 'closed'
 //
@@ -69,26 +68,24 @@ void loop()
 {
  
 
-    if (digitalRead(open_shutter_command) == LOW)   // open shutter command
+    if ((digitalRead(open_shutter_command) == LOW) && (last_state == "closed"))   // open shutter command
     {
-	  if (last_state == "closed");                  // test if the shutter is closed and if so open it
-	    {
+	  
          Serial.print ("received OS");              // for testing
          open_shutter();
 	     digitalWrite(shutter_status, LOW) ;        // set the status pin - low is open
-		 last_state= "open";
-        }
+		 last_state = "open";
+      
 	}
     
-    if (digitalRead(close_shutter_command) == LOW) // close shutter command
+    if ((digitalRead(close_shutter_command) == LOW) && (last_state == "open")) // close shutter command
     {
-	  if (last_state == "open");                   // test if the shutter is open and if so close it
-	    {
+	  
 	      //Serial.print ("received CS");
 	      close_shutter();
 	      digitalWrite(shutter_status, HIGH) ;     // set the status pin - high is closed
-		  last_state= "closed";
-        }
+		  last_state = "closed";
+        
 	}
 
 } // end void loop
@@ -109,34 +106,31 @@ void close_shutter()
  
   Serial.println( "  closing shutter ");
  
- if (last_state == "open");
- {
+ 
 	 int revcount = 0;
 	 
-	 while (last_state == "open")
+	 while (revcount <= number_of_revs)
 	 {
 		digitalWrite(SHUTTERRELAY3, HIGH);          // closing POLARITY shutter - closes first
 		digitalWrite(SHUTTERRELAY4, LOW);
+
 		 // now poll the limit switch for activations as the pulley rotates
 		 if (digitalRead(shutter_limit_switch) == LOW)  // the limit switch has been pressed by the rotating cam
 		 {
-		 delay(3000);  // wait for the switch to open as the rotating cam moves on
+		     delay(3000);  // wait for the switch to open as the rotating cam moves on
 			 revcount++;
 			 Serial.print( "Rev count is : ");
-			 Serial.println( revcount);
-			 if (revcount >= number_of_revs)
-			 {
-				 //last_state = "closed";
-				 initialise_relays();  // TURN THE POWER OFF
-			 }     // endif revcount
+			 Serial.println( revcount); 
 
 		 }   //  endif digital read
 
-	 }  // endwhile
+	 }  // end while
+
+	 initialise_relays();  // TURN THE POWER OFF
 	  
 	   Serial.print( "Rev count is : ");
 	    Serial.println( revcount);
- }
+ 
 
 
   initialise_relays();  // TURN THE POWER OFF
@@ -187,36 +181,30 @@ void open_shutter()
 
   // then open the shutter
 
-  if (last_state == "closed");
-  {
+ 
 	  int revcount = 0;
 	  
-	  while (last_state == "closed")
+	  while (revcount <= number_of_revs )
 	  {
 		  digitalWrite(SHUTTERRELAY3, LOW);          // these two lines from version 2 - they set the motor direction
 		  digitalWrite(SHUTTERRELAY4, HIGH);
+
 		  // now poll the limit switch for activations as the pulley rotates
 		  if (digitalRead(shutter_limit_switch) == LOW)   // the limit switch has been pressed by the rotating cam
 		  {
-		  delay(3000);  // wait for the switch to open as the rotating cam moves on
+		      delay(3000);  // wait for the switch to open as the rotating cam moves on
 			  revcount++;
 			  Serial.print( "Rev count is : ");
 			  Serial.println( revcount);
 
-			  if (revcount >= number_of_revs)
-			  {
-				 // last_state = "open";
-				  initialise_relays();  // TURN THE POWER OFF
-			  }
-		  }
-	  }
+		  }  //endif
+	  }  //end while
+
+	  initialise_relays();  // TURN THE POWER OFF
+
  Serial.println( "  end of shutter open routine ");
  Serial.print( "ending Rev count is : ");
  Serial.println( revcount);
-
-  }
-
-  
 
 }// end  OS
 
