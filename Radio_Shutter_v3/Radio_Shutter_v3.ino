@@ -133,7 +133,7 @@ void close_shutter()
 		 }   //  endif digital read
 
 	 }  // endwhile
-	  Serial.println( "  end of shutter closed routine ");
+	  
 	   Serial.print( "Rev count is : ");
 	    Serial.println( revcount);
  }
