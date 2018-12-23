@@ -136,18 +136,19 @@ void close_shutter()
 
   initialise_relays();  // TURN THE POWER OFF
 
+  Serial.println (" Waiting for flap to close " + String(digitalRead( Flapclosed)));
 
   while (digitalRead(Flapclosed) == HIGH)       //high when not pushed closed, so use the NO connection to arduino for the closed state switch
   {
     digitalWrite(FLAPRELAY1, HIGH);          // EXTENDING POLARITY - Flap CLOSES second - the way the mechanics works is that the
     digitalWrite(FLAPRELAY2, LOW);           // linear actuator has to extend to close the flap
     digitalRead(Flapclosed);
-    Serial.println (" Waiting for flap to close " + String(digitalRead( Flapclosed)));
+    
    
   }   // endwhile flapclosed
 
   
-  Serial.println (" Flap now closed " );
+  Serial.println (" ++++++++++++++  Flap now closed +++++++++++++" );
   Serial.println( "  end of shutter closed routine ");
   // The flap and shutter are now closed so set the relays back to initial status -
 
@@ -164,13 +165,14 @@ void open_shutter()
 
   // Open the flap first
 
+  Serial.println ("Waiting for Flap to open  " + String(digitalRead( Flapopen)));
  
   while (digitalRead(Flapopen) == HIGH)         //high when not pushed closed, so use the NO connection to arduino for the open state switch
   {
     digitalWrite(FLAPRELAY1, LOW);             // retracting polarity - Flap opens first - the mechanics means that the actuator
     digitalWrite(FLAPRELAY2, HIGH);            // retracts in order to open the flap
     digitalRead(Flapopen);                     // will go LOW to signify flap is fully open i.e. the switch has ben pushed closed
-    Serial.println ("Waiting for Flap to open  " + String(digitalRead( Flapopen)));
+    
    
   }
 
@@ -203,10 +205,10 @@ void open_shutter()
 
 	  initialise_relays();  // TURN THE POWER OFF
 
- Serial.println( "  end of shutter open routine ");
+ 
  Serial.print( "ending Rev count is : ");
  Serial.println( revcount);
-
+ Serial.println( "------------- shutter open - end of shutter open routine ");
 }// end  OS
 
 
