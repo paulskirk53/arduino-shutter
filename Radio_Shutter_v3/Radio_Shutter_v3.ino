@@ -71,7 +71,7 @@ void loop()
     if ((digitalRead(open_shutter_command) == LOW) && (last_state == "closed"))   // open shutter command
     {
 	  
-         Serial.print ("received OS");              // for testing
+         Serial.println ("received OS");              // for testing
          open_shutter();
 	     digitalWrite(shutter_status, LOW) ;        // set the status pin - low is open
 		 last_state = "open";
@@ -81,7 +81,7 @@ void loop()
     if ((digitalRead(close_shutter_command) == LOW) && (last_state == "open")) // close shutter command
     {
 	  
-	      //Serial.print ("received CS");
+	      Serial.println ("received CS");
 	      close_shutter();
 	      digitalWrite(shutter_status, HIGH) ;     // set the status pin - high is closed
 		  last_state = "closed";
