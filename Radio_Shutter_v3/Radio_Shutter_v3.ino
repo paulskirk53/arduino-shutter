@@ -6,8 +6,6 @@
 //
 //
 
-#include <SoftwareSerial.h>
-
 
 // pin definitions for shutter relays
 
@@ -60,7 +58,7 @@ void setup()
   pinMode(close_shutter_command, INPUT_PULLUP);
   pinMode(shutter_status, OUTPUT);           //this routine sets this pin and it is read by the command processor arduino
   digitalWrite(shutter_status, HIGH);        // HIGH means closed
-   Serial.println( "  exit setup ");
+ //  Serial.println( "  exit setup ");
 
 }  // end setup
 
@@ -71,7 +69,7 @@ void loop()
     if ((digitalRead(open_shutter_command) == LOW) && (last_state == "closed"))   // open shutter command
     {
 	  
-         Serial.println ("received OS");              // for testing
+      //   Serial.println ("received OS");              // for testing
          open_shutter();
 	     digitalWrite(shutter_status, LOW) ;        // set the status pin - low is open
 		 last_state = "open";
@@ -81,7 +79,7 @@ void loop()
     if ((digitalRead(close_shutter_command) == LOW) && (last_state == "open")) // close shutter command
     {
 	  
-	      Serial.println ("received CS");
+	     // Serial.println ("received CS");
 	      close_shutter();
 	      digitalWrite(shutter_status, HIGH) ;     // set the status pin - high is closed
 		  last_state = "closed";
@@ -93,7 +91,7 @@ void loop()
 
 void initialise_relays()
 {
-    Serial.println( "  Initialising relays ");
+  //  Serial.println( "  Initialising relays ");
   digitalWrite(FLAPRELAY1, HIGH);
   digitalWrite(FLAPRELAY2, HIGH);
   digitalWrite(SHUTTERRELAY3, HIGH);
@@ -105,7 +103,7 @@ void close_shutter()
   // commands to close shutters
   // commands to close shutters reverse POLARITY TO BOTH motors
  
-  Serial.println( "  closing shutter ");
+ // Serial.println( "  closing shutter ");
  
  
 	 int revcount = 0;
@@ -120,8 +118,8 @@ void close_shutter()
 		 {
 		     delay(3000);  // wait for the switch to open as the rotating cam moves on
 			 revcount++;
-			 Serial.print( "Rev count is : ");
-			 Serial.println( revcount); 
+			// Serial.print( "Rev count is : ");
+			// Serial.println( revcount); 
 
 		 }   //  endif digital read
 
@@ -129,14 +127,14 @@ void close_shutter()
 
 	 initialise_relays();  // TURN THE POWER OFF
 	  
-	   Serial.print( "Rev count is : ");
-	    Serial.println( revcount);
+	//   Serial.print( "Rev count is : ");
+	//    Serial.println( revcount);
  
 
 
   initialise_relays();  // TURN THE POWER OFF
 
-  Serial.println (" Waiting for flap to close " + String(digitalRead( Flapclosed)));
+ // Serial.println (" Waiting for flap to close " + String(digitalRead( Flapclosed)));
 
   while (digitalRead(Flapclosed) == HIGH)       //high when not pushed closed, so use the NO connection to arduino for the closed state switch
   {
@@ -148,8 +146,8 @@ void close_shutter()
   }   // endwhile flapclosed
 
   
-  Serial.println (" ++++++++++++++  Flap now closed +++++++++++++" );
-  Serial.println( "  end of shutter closed routine ");
+ //Serial.println (" ++++++++++++++  Flap now closed +++++++++++++" );
+ // Serial.println( "  end of shutter closed routine ");
   // The flap and shutter are now closed so set the relays back to initial status -
 
   initialise_relays();  // TURN THE POWER OFF
@@ -165,7 +163,7 @@ void open_shutter()
 
   // Open the flap first
 
-  Serial.println ("Waiting for Flap to open  " + String(digitalRead( Flapopen)));
+ // Serial.println ("Waiting for Flap to open  " + String(digitalRead( Flapopen)));
  
   while (digitalRead(Flapopen) == HIGH)         //high when not pushed closed, so use the NO connection to arduino for the open state switch
   {
@@ -176,7 +174,7 @@ void open_shutter()
    
   }
 
-  Serial.println ("Flap now open  ");
+ // Serial.println ("Flap now open  ");
   
 
   initialise_relays();  // TURN THE POWER OFF
@@ -197,8 +195,8 @@ void open_shutter()
 		  {
 		      delay(3000);  // wait for the switch to open as the rotating cam moves on
 			  revcount++;
-			  Serial.print( "Rev count is : ");
-			  Serial.println( revcount);
+			//  Serial.print( "Rev count is : ");
+			//  Serial.println( revcount);
 
 		  }  //endif
 	  }  //end while
@@ -206,9 +204,9 @@ void open_shutter()
 	  initialise_relays();  // TURN THE POWER OFF
 
  
- Serial.print( "ending Rev count is : ");
- Serial.println( revcount);
- Serial.println( "------------- shutter open - end of shutter open routine ");
+ //Serial.print( "ending Rev count is : ");
+ //Serial.println( revcount);
+ //Serial.println( "------------- shutter open - end of shutter open routine ");
 }// end  OS
 
 
