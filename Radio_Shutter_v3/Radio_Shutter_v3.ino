@@ -34,10 +34,8 @@ void setup()
   Serial.begin(9600);
 
   
-  // ALL THE RELAYS ARE ACTIVE LOW, SO SET THEM ALL HIGH AS THE INITIAL STATE
+  
   // Then define the pin modes. This avoids pins being low (activates realays) on power reset.
-
-  initialise_relays();      // sets all the relay pins HIGH for power off state
 
   // pinmodes for shutter and flap relays
   // Initialise the Arduino data pins for OUTPUT
@@ -59,6 +57,9 @@ void setup()
   pinMode(shutter_status, OUTPUT);           //this routine sets this pin and it is read by the command processor arduino
   digitalWrite(shutter_status, HIGH);        // HIGH means closed
  //  Serial.println( "  exit setup ");
+// ALL THE RELAYS ARE ACTIVE LOW, SO SET THEM ALL HIGH AS THE INITIAL STATE
+
+initialise_relays();      // sets all the relay pins HIGH for power off state
 
 }  // end setup
 
@@ -208,5 +209,3 @@ void open_shutter()
  //Serial.println( revcount);
  //Serial.println( "------------- shutter open - end of shutter open routine ");
 }// end  OS
-
-
