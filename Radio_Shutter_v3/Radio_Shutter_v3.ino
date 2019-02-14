@@ -117,7 +117,7 @@ void close_shutter()
 		 // now poll the limit switch for activations as the pulley rotates
 		 if (digitalRead(shutter_limit_switch) == LOW)  // the limit switch has been pressed by the rotating cam
 		 {
-		     delay(3000);  // wait for the switch to open as the rotating cam moves on
+		     delay(1000);  // wait for the switch to open as the rotating cam moves on
 			 revcount++;
 			// Serial.print( "Rev count is : ");
 			// Serial.println( revcount); 
@@ -194,7 +194,7 @@ void open_shutter()
 		  // now poll the limit switch for activations as the pulley rotates
 		  if (digitalRead(shutter_limit_switch) == LOW)   // the limit switch has been pressed by the rotating cam
 		  {
-		      delay(3000);  // wait for the switch to open as the rotating cam moves on
+		      delay(1000);  // wait for the switch to open as the rotating cam moves on
 			  revcount++;
 			//  Serial.print( "Rev count is : ");
 			//  Serial.println( revcount);
