@@ -27,4 +27,3 @@ void open_shutter();
 #include "pins_arduino.h" 
 #include "arduino.h"
 #include "Radio_Shutter_v3.ino"
-#include "Documentation.ino"

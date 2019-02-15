@@ -33,9 +33,15 @@ void setup()
 
   Serial.begin(9600);
 
+
+
+  // Define the pin modes. This avoids pins being low (activates realays) on power reset.
+  // pinmodes for the open and close command pins and the shutter status pin
+  pinMode(open_shutter_command, INPUT_PULLUP);
+  pinMode(close_shutter_command, INPUT_PULLUP);
+  pinMode(shutter_status, OUTPUT);           //this routine sets this pin and it is read by the command processor arduino
   
-  
-  // Then define the pin modes. This avoids pins being low (activates realays) on power reset.
+  digitalWrite(shutter_status, HIGH);        // HIGH means closed
 
   // pinmodes for shutter and flap relays
   // Initialise the Arduino data pins for OUTPUT
@@ -46,46 +52,47 @@ void setup()
   pinMode(SHUTTERRELAY4, OUTPUT);
 
   // initialsie the pins for shutter and flap microswitches - input_pullup sets initial state to 1
-  pinMode(shutter_limit_switch, INPUT_PULLUP);  
+  pinMode(shutter_limit_switch, INPUT_PULLUP);
   pinMode (Flapopen, INPUT_PULLUP);
   pinMode (Flapclosed, INPUT_PULLUP);
 
-  // pinmodes for the open and close command pins and the shutter status pin
 
-  pinMode(open_shutter_command, INPUT_PULLUP);
-  pinMode(close_shutter_command, INPUT_PULLUP);
-  pinMode(shutter_status, OUTPUT);           //this routine sets this pin and it is read by the command processor arduino
-  digitalWrite(shutter_status, HIGH);        // HIGH means closed
- //  Serial.println( "  exit setup ");
-// ALL THE RELAYS ARE ACTIVE LOW, SO SET THEM ALL HIGH AS THE INITIAL STATE
+  // ALL THE RELAYS ARE ACTIVE LOW, SO SET THEM ALL HIGH AS THE INITIAL STATE
 
-initialise_relays();      // sets all the relay pins HIGH for power off state
+  initialise_relays();      // sets all the relay pins HIGH for power off state
+
+// delay below introduced to give the command processor time to define its pin states, which are used by this sketch
+//there was a problem where relay 1 (OS) was activated due to indeterminate state of pin 46 as was the thinking.
+//this delay seemed to cure the problem
+
+delay(5000);
+
 
 }  // end setup
 
 void loop()
 {
- 
 
-    if ((digitalRead(open_shutter_command) == LOW) && (last_state == "closed"))   // open shutter command
-    {
-	  
-      //   Serial.println ("received OS");              // for testing
-         open_shutter();
-	     digitalWrite(shutter_status, LOW) ;        // set the status pin - low is open
-		 last_state = "open";
-      
-	}
-    
-    if ((digitalRead(close_shutter_command) == LOW) && (last_state == "open")) // close shutter command
-    {
-	  
-	     // Serial.println ("received CS");
-	      close_shutter();
-	      digitalWrite(shutter_status, HIGH) ;     // set the status pin - high is closed
-		  last_state = "closed";
-        
-	}
+
+  if ((digitalRead(open_shutter_command) == LOW) && (last_state == "closed"))   // open shutter command
+  {
+
+    //   Serial.println ("received OS");              // for testing
+    open_shutter();
+    digitalWrite(shutter_status, LOW) ;        // set the status pin - low is open
+    last_state = "open";
+
+  }
+
+  if ((digitalRead(close_shutter_command) == LOW) && (last_state == "open")) // close shutter command
+  {
+
+    // Serial.println ("received CS");
+    close_shutter();
+    digitalWrite(shutter_status, HIGH) ;     // set the status pin - high is closed
+    last_state = "closed";
+
+  }
 
 
 } // end void loop
@@ -103,52 +110,52 @@ void close_shutter()
 {
   // commands to close shutters
   // commands to close shutters reverse POLARITY TO BOTH motors
- 
- // Serial.println( "  closing shutter ");
- 
- 
-	 int revcount = 0;
-	 
-	 while (revcount <= number_of_revs)
-	 {
-		digitalWrite(SHUTTERRELAY3, HIGH);          // closing POLARITY shutter - closes first
-		digitalWrite(SHUTTERRELAY4, LOW);
 
-		 // now poll the limit switch for activations as the pulley rotates
-		 if (digitalRead(shutter_limit_switch) == LOW)  // the limit switch has been pressed by the rotating cam
-		 {
-		     delay(1000);  // wait for the switch to open as the rotating cam moves on
-			 revcount++;
-			// Serial.print( "Rev count is : ");
-			// Serial.println( revcount); 
+  // Serial.println( "  closing shutter ");
 
-		 }   //  endif digital read
 
-	 }  // end while
+  int revcount = 0;
 
-	 initialise_relays();  // TURN THE POWER OFF
-	  
-	//   Serial.print( "Rev count is : ");
-	//    Serial.println( revcount);
- 
+  while (revcount <= number_of_revs)
+  {
+    digitalWrite(SHUTTERRELAY3, HIGH);          // closing POLARITY shutter - closes first
+    digitalWrite(SHUTTERRELAY4, LOW);
+
+    // now poll the limit switch for activations as the pulley rotates
+    if (digitalRead(shutter_limit_switch) == LOW)  // the limit switch has been pressed by the rotating cam
+    {
+      delay(1000);  // wait for the switch to open as the rotating cam moves on
+      revcount++;
+      // Serial.print( "Rev count is : ");
+      // Serial.println( revcount);
+
+    }   //  endif digital read
+
+  }  // end while
+
+  initialise_relays();  // TURN THE POWER OFF
+
+  //   Serial.print( "Rev count is : ");
+  //    Serial.println( revcount);
+
 
 
   initialise_relays();  // TURN THE POWER OFF
 
- // Serial.println (" Waiting for flap to close " + String(digitalRead( Flapclosed)));
+  // Serial.println (" Waiting for flap to close " + String(digitalRead( Flapclosed)));
 
   while (digitalRead(Flapclosed) == HIGH)       //high when not pushed closed, so use the NO connection to arduino for the closed state switch
   {
     digitalWrite(FLAPRELAY1, HIGH);          // EXTENDING POLARITY - Flap CLOSES second - the way the mechanics works is that the
     digitalWrite(FLAPRELAY2, LOW);           // linear actuator has to extend to close the flap
     digitalRead(Flapclosed);
-    
-   
+
+
   }   // endwhile flapclosed
 
-  
- //Serial.println (" ++++++++++++++  Flap now closed +++++++++++++" );
- // Serial.println( "  end of shutter closed routine ");
+
+  //Serial.println (" ++++++++++++++  Flap now closed +++++++++++++" );
+  // Serial.println( "  end of shutter closed routine ");
   // The flap and shutter are now closed so set the relays back to initial status -
 
   initialise_relays();  // TURN THE POWER OFF
@@ -160,52 +167,52 @@ void close_shutter()
 
 void open_shutter()
 {
-  
+
 
   // Open the flap first
 
- // Serial.println ("Waiting for Flap to open  " + String(digitalRead( Flapopen)));
- 
+  // Serial.println ("Waiting for Flap to open  " + String(digitalRead( Flapopen)));
+
   while (digitalRead(Flapopen) == HIGH)         //high when not pushed closed, so use the NO connection to arduino for the open state switch
   {
     digitalWrite(FLAPRELAY1, LOW);             // retracting polarity - Flap opens first - the mechanics means that the actuator
     digitalWrite(FLAPRELAY2, HIGH);            // retracts in order to open the flap
     digitalRead(Flapopen);                     // will go LOW to signify flap is fully open i.e. the switch has ben pushed closed
-    
-   
+
+
   }
 
- // Serial.println ("Flap now open  ");
-  
+  // Serial.println ("Flap now open  ");
+
 
   initialise_relays();  // TURN THE POWER OFF
 
 
   // then open the shutter
 
- 
-	  int revcount = 0;
-	  
-	  while (revcount <= number_of_revs )
-	  {
-		  digitalWrite(SHUTTERRELAY3, LOW);          // these two lines from version 2 - they set the motor direction
-		  digitalWrite(SHUTTERRELAY4, HIGH);
 
-		  // now poll the limit switch for activations as the pulley rotates
-		  if (digitalRead(shutter_limit_switch) == LOW)   // the limit switch has been pressed by the rotating cam
-		  {
-		      delay(1000);  // wait for the switch to open as the rotating cam moves on
-			  revcount++;
-			//  Serial.print( "Rev count is : ");
-			//  Serial.println( revcount);
+  int revcount = 0;
 
-		  }  //endif
-	  }  //end while
+  while (revcount <= number_of_revs )
+  {
+    digitalWrite(SHUTTERRELAY3, LOW);          // these two lines from version 2 - they set the motor direction
+    digitalWrite(SHUTTERRELAY4, HIGH);
 
-	  initialise_relays();  // TURN THE POWER OFF
+    // now poll the limit switch for activations as the pulley rotates
+    if (digitalRead(shutter_limit_switch) == LOW)   // the limit switch has been pressed by the rotating cam
+    {
+      delay(1000);  // wait for the switch to open as the rotating cam moves on
+      revcount++;
+      //  Serial.print( "Rev count is : ");
+      //  Serial.println( revcount);
 
- 
- //Serial.print( "ending Rev count is : ");
- //Serial.println( revcount);
- //Serial.println( "------------- shutter open - end of shutter open routine ");
+    }  //endif
+  }  //end while
+
+  initialise_relays();  // TURN THE POWER OFF
+
+
+  //Serial.print( "ending Rev count is : ");
+  //Serial.println( revcount);
+  //Serial.println( "------------- shutter open - end of shutter open routine ");
 }// end  OS
