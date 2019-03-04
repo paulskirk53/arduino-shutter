@@ -26,7 +26,7 @@
 #define shutter_status 48                   //OUTPUT pin
 
 String last_state = "closed";
-const int number_of_revs = 10;   // set this empirically depending upon number of turns of the winch required to open / close the shutter
+const int number_of_revs = 20;   // set this empirically depending upon number of turns of the winch required to open / close the shutter
 
 void setup()
 {
