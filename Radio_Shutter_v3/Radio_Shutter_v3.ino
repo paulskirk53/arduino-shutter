@@ -31,7 +31,7 @@ const int number_of_revs = 20;   // set this empirically depending upon number o
 void setup()
 {
 
-  Serial.begin(9600);
+ // Serial.begin(9600);   //not required outside of testing
 
 
 
