@@ -78,7 +78,7 @@ void loop()
   {
 
     //   Serial.println ("received OS");              // for testing
-    open_shutter();
+    open_process();
     digitalWrite(shutter_status, LOW) ;        // set the status pin - low is open
     last_state = "open";
 
@@ -88,7 +88,7 @@ void loop()
   {
 
     // Serial.println ("received CS");
-    close_shutter();
+    close_process();
     digitalWrite(shutter_status, HIGH) ;     // set the status pin - high is closed
     last_state = "closed";
 
@@ -106,7 +106,7 @@ void initialise_relays()
   digitalWrite(SHUTTERRELAY4, HIGH);
 }
 
-void close_shutter()
+void close_process()
 {
   // commands to close shutters
   // commands to close shutters reverse POLARITY TO BOTH motors
@@ -133,7 +133,7 @@ void close_shutter()
 
   }  // end while
 
-  initialise_relays();  // TURN THE POWER OFF
+  
 
   //   Serial.print( "Rev count is : ");
   //    Serial.println( revcount);
@@ -165,7 +165,7 @@ void close_shutter()
 
 
 
-void open_shutter()
+void open_process()
 {
 
 

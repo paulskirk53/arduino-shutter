@@ -20,8 +20,8 @@
 //
 //
 void initialise_relays();
-void close_shutter();
-void open_shutter();
+void close_process();
+void open_process();
 
 #include "pins_arduino.h" 
 #include "arduino.h"
