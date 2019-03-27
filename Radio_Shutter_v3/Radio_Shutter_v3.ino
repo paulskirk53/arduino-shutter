@@ -1,3 +1,5 @@
+//this version tested on a board with wies, manually connected disconnected to simulate shutter open/ close
+// and flap open / close.
 //TO DO
 // SET THE CONST number_of_revs to whatever is needed to work the shutter
 //
@@ -19,15 +21,19 @@
 
 //Pin 11 was defined here previously, but no longer used. It is still brought out from the arduino as pin 11 blue wire to the terminal block
 #define Flapopen       12                    //connected to new limit mechanism with aluminium and wood disc actuator
-#define Flapclosed     13                    //connected to new limit mechanism with aluminium and wood disc actuator
+#define Flapclosed     11                    //connected to new limit mechanism with aluminium and wood disc actuator
 #define shutter_limit_switch  9             // now used to detect transitions on the winch cam
 #define open_shutter_command 46             //input pin
 #define close_shutter_command 47            //input pin
 #define shutter_status 48                   //OUTPUT pin
 
 String last_state = "closed";
-const int number_of_revs = 20;   // set this empirically depending upon number of turns of the winch required to open / close the shutter
+const int number_of_revs = 5;   // set this empirically depending upon number of turns of the winch required to open / close the shutter
 
+long x=1;
+// boolean os, cs;
+// int opencount=0;
+// int closecount=0;
 void setup()
 {
 
@@ -68,16 +74,18 @@ void setup()
 delay(5000);
 
 
+
 }  // end setup
 
 void loop()
 {
-
+// os=digitalRead(open_shutter_command);
+// cs=digitalRead(close_shutter_command);
 
   if ((digitalRead(open_shutter_command) == LOW) && (last_state == "closed"))   // open shutter command
   {
-
-    //   Serial.println ("received OS");              // for testing
+    // opencount++;
+    // Serial.println ("received OS");              // for testing
     open_process();
     digitalWrite(shutter_status, LOW) ;        // set the status pin - low is open
     last_state = "open";
@@ -86,14 +94,14 @@ void loop()
 
   if ((digitalRead(close_shutter_command) == LOW) && (last_state == "open")) // close shutter command
   {
-
+    // closecount++;
     // Serial.println ("received CS");
     close_process();
     digitalWrite(shutter_status, HIGH) ;     // set the status pin - high is closed
     last_state = "closed";
 
   }
-
+ // x++;
 
 } // end void loop
 
@@ -116,10 +124,14 @@ void close_process()
 
   int revcount = 0;
 
+
+      digitalWrite(SHUTTERRELAY3, HIGH);          // closing POLARITY shutter - closes first
+      digitalWrite(SHUTTERRELAY4, LOW);
+
+
   while (revcount <= number_of_revs)
   {
-    digitalWrite(SHUTTERRELAY3, HIGH);          // closing POLARITY shutter - closes first
-    digitalWrite(SHUTTERRELAY4, LOW);
+
 
     // now poll the limit switch for activations as the pulley rotates
     if (digitalRead(shutter_limit_switch) == LOW)  // the limit switch has been pressed by the rotating cam
@@ -144,10 +156,14 @@ void close_process()
 
   // Serial.println (" Waiting for flap to close " + String(digitalRead( Flapclosed)));
 
+
+      digitalWrite(FLAPRELAY1, HIGH);          // EXTENDING POLARITY - Flap CLOSES second - the way the mechanics works is that the
+      digitalWrite(FLAPRELAY2, LOW);           // linear actuator has to extend to close the flap
+
+
   while (digitalRead(Flapclosed) == HIGH)       //high when not pushed closed, so use the NO connection to arduino for the closed state switch
   {
-    digitalWrite(FLAPRELAY1, HIGH);          // EXTENDING POLARITY - Flap CLOSES second - the way the mechanics works is that the
-    digitalWrite(FLAPRELAY2, LOW);           // linear actuator has to extend to close the flap
+
     digitalRead(Flapclosed);
 
 
@@ -173,10 +189,14 @@ void open_process()
 
   // Serial.println ("Waiting for Flap to open  " + String(digitalRead( Flapopen)));
 
+      digitalWrite(FLAPRELAY1, LOW);             // retracting polarity - Flap opens first - the mechanics means that the actuator
+      digitalWrite(FLAPRELAY2, HIGH);            // retracts in order to open the flap
+	  
+
   while (digitalRead(Flapopen) == HIGH)         //high when not pushed closed, so use the NO connection to arduino for the open state switch
   {
-    digitalWrite(FLAPRELAY1, LOW);             // retracting polarity - Flap opens first - the mechanics means that the actuator
-    digitalWrite(FLAPRELAY2, HIGH);            // retracts in order to open the flap
+// on the open brace - {digitalRead(FLAPRELAY1)}{digitalRead(FLAPRELAY2)}
+
     digitalRead(Flapopen);                     // will go LOW to signify flap is fully open i.e. the switch has ben pushed closed
 
 
@@ -193,10 +213,13 @@ void open_process()
 
   int revcount = 0;
 
+      digitalWrite(SHUTTERRELAY3, LOW);          // these two lines from version 2 - they set the motor direction
+      digitalWrite(SHUTTERRELAY4, HIGH);
+	  
+
   while (revcount <= number_of_revs )
   {
-    digitalWrite(SHUTTERRELAY3, LOW);          // these two lines from version 2 - they set the motor direction
-    digitalWrite(SHUTTERRELAY4, HIGH);
+  // on the open brace {digitalRead(SHUTTERRELAY3)}{digitalRead(SHUTTERRELAY4)}
 
     // now poll the limit switch for activations as the pulley rotates
     if (digitalRead(shutter_limit_switch) == LOW)   // the limit switch has been pressed by the rotating cam
