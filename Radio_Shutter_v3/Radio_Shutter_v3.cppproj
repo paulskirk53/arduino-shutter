@@ -127,6 +127,7 @@
       <VisualMicroSettings>
         <debug.view.DigitalPins>
         </debug.view.DigitalPins>
+        <arduino.upload.port>COM4</arduino.upload.port>
       </VisualMicroSettings>
     </VisualMicroSettings>
   </PropertyGroup>
@@ -215,6 +216,7 @@
       <VisualMicroSettings>
         <debug.view.DigitalPins>
         </debug.view.DigitalPins>
+        <arduino.upload.port>COM4</arduino.upload.port>
       </VisualMicroSettings>
     </VisualMicroSettings>
   </PropertyGroup>

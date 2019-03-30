@@ -1,5 +1,8 @@
 //this version tested on a board with wies, manually connected disconnected to simulate shutter open/ close
 // and flap open / close.
+// 29-3-19 changed the revcount variables so that they are separate for open/ close. this seemed to fix the 
+// problem of needing 5 switch closures for open and six for close. I have no idea why - there is no logic.
+
 //TO DO
 // SET THE CONST number_of_revs to whatever is needed to work the shutter
 //
@@ -30,16 +33,15 @@
 String last_state = "closed";
 const int number_of_revs = 5;   // set this empirically depending upon number of turns of the winch required to open / close the shutter
 
-long x=1;
+//int flaprelay1count = 0;     // used for testing with breakpoints
 // boolean os, cs;
 // int opencount=0;
 // int closecount=0;
+
 void setup()
 {
 
  // Serial.begin(9600);   //not required outside of testing
-
-
 
   // Define the pin modes. This avoids pins being low (activates realays) on power reset.
   // pinmodes for the open and close command pins and the shutter status pin
@@ -69,9 +71,10 @@ void setup()
 
 // delay below introduced to give the command processor time to define its pin states, which are used by this sketch
 //there was a problem where relay 1 (OS) was activated due to indeterminate state of pin 46 as was the thinking.
-//this delay seemed to cure the problem
+//this delay seemed to cure the problem. fURTHER ANALYSIS - 30-3-19 shows that if power is lost to the two arduino boards 
+// i.e. command processor and shutter, the relay system activates relay 1 which is open flap
 
-delay(5000);
+delay(3000);
 
 
 
@@ -99,9 +102,9 @@ void loop()
     close_process();
     digitalWrite(shutter_status, HIGH) ;     // set the status pin - high is closed
     last_state = "closed";
-
+	
   }
- // x++;
+ // {last_state}{cs}{os}{x}{digitalRead(FLAPRELAY1)}{digitalRead(FLAPRELAY2)}{digitalRead(SHUTTERRELAY3)}{digitalRead(SHUTTERRELAY4)} {opencount} {closecount}
 
 } // end void loop
 
@@ -122,14 +125,14 @@ void close_process()
   // Serial.println( "  closing shutter ");
 
 
-  int revcount = 0;
+  int closerevcount = 0;                           //changed var name
 
 
       digitalWrite(SHUTTERRELAY3, HIGH);          // closing POLARITY shutter - closes first
       digitalWrite(SHUTTERRELAY4, LOW);
 
 
-  while (revcount <= number_of_revs)
+  while (closerevcount <= number_of_revs)
   {
 
 
@@ -137,7 +140,7 @@ void close_process()
     if (digitalRead(shutter_limit_switch) == LOW)  // the limit switch has been pressed by the rotating cam
     {
       delay(1000);  // wait for the switch to open as the rotating cam moves on
-      revcount++;
+      closerevcount++;
       // Serial.print( "Rev count is : ");
       // Serial.println( revcount);
 
@@ -188,8 +191,13 @@ void open_process()
   // Open the flap first
 
   // Serial.println ("Waiting for Flap to open  " + String(digitalRead( Flapopen)));
-
+ // flaprelay1count++;
       digitalWrite(FLAPRELAY1, LOW);             // retracting polarity - Flap opens first - the mechanics means that the actuator
+	  
+	  //PUT A DEBUG HERE TO SEE IF THIS EECUTES AFTER CS# (as happened in test
+
+
+
       digitalWrite(FLAPRELAY2, HIGH);            // retracts in order to open the flap
 	  
 
@@ -211,13 +219,13 @@ void open_process()
   // then open the shutter
 
 
-  int revcount = 0;
+  int openrevcount = 0;
 
       digitalWrite(SHUTTERRELAY3, LOW);          // these two lines from version 2 - they set the motor direction
       digitalWrite(SHUTTERRELAY4, HIGH);
 	  
 
-  while (revcount <= number_of_revs )
+  while (openrevcount <= number_of_revs )
   {
   // on the open brace {digitalRead(SHUTTERRELAY3)}{digitalRead(SHUTTERRELAY4)}
 
@@ -225,7 +233,7 @@ void open_process()
     if (digitalRead(shutter_limit_switch) == LOW)   // the limit switch has been pressed by the rotating cam
     {
       delay(1000);  // wait for the switch to open as the rotating cam moves on
-      revcount++;
+      openrevcount++;
       //  Serial.print( "Rev count is : ");
       //  Serial.println( revcount);
 
