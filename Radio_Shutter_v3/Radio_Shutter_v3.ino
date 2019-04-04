@@ -31,9 +31,10 @@
 #define shutter_status 48                   //OUTPUT pin
 
 String last_state = "closed";
-const int number_of_revs = 5;   // set this empirically depending upon number of turns of the winch required to open / close the shutter
-
-//int flaprelay1count = 0;     // used for testing with breakpoints
+const int number_of_revs = 5;     // set this empirically depending upon number of turns of the winch required to open / close the shutter
+long motor_time_limit    = 30000; // 30 second limit for winch motor to be active
+long motor_start_time    = 0;     // used to measure how long the winch motor runs
+//int flaprelay1count = 0;        // used for testing with breakpoints
 // boolean os, cs;
 // int opencount=0;
 // int closecount=0;
@@ -130,19 +131,22 @@ void close_process()
 
       digitalWrite(SHUTTERRELAY3, HIGH);          // closing POLARITY shutter - closes first
       digitalWrite(SHUTTERRELAY4, LOW);
-
+      motor_start_time = millis();
 
   while (closerevcount <= number_of_revs)
   {
 
+  	  	  if ((millis() - motor_start_time) > motor_time_limit)   // don't let the motor run longer than defined time limit
+  	  	  {
+	  	  	  closerevcount = number_of_revs +1;           // kill the while loop
+  	  	  }
 
     // now poll the limit switch for activations as the pulley rotates
     if (digitalRead(shutter_limit_switch) == LOW)  // the limit switch has been pressed by the rotating cam
     {
-      delay(1000);  // wait for the switch to open as the rotating cam moves on
+      delay(750);  // wait for the switch to open as the rotating cam moves on
       closerevcount++;
-      // Serial.print( "Rev count is : ");
-      // Serial.println( revcount);
+
 
     }   //  endif digital read
 
@@ -216,26 +220,31 @@ void open_process()
   initialise_relays();  // TURN THE POWER OFF
 
 
-  // then open the shutter
+  // then open the shutter (winch)
 
 
   int openrevcount = 0;
 
+  
+  
       digitalWrite(SHUTTERRELAY3, LOW);          // these two lines from version 2 - they set the motor direction
       digitalWrite(SHUTTERRELAY4, HIGH);
 	  
+motor_start_time = millis();
 
   while (openrevcount <= number_of_revs )
   {
   // on the open brace {digitalRead(SHUTTERRELAY3)}{digitalRead(SHUTTERRELAY4)}
-
+  	 if ((millis() - motor_start_time) > motor_time_limit)   // don't let the motor run longer than defined time limit
+  	 {
+	 	  openrevcount = number_of_revs +1;           // kill the while loop
+  	 }
     // now poll the limit switch for activations as the pulley rotates
     if (digitalRead(shutter_limit_switch) == LOW)   // the limit switch has been pressed by the rotating cam
     {
-      delay(1000);  // wait for the switch to open as the rotating cam moves on
+      delay(750);  // wait for the switch to open as the rotating cam moves on
       openrevcount++;
-      //  Serial.print( "Rev count is : ");
-      //  Serial.println( revcount);
+
 
     }  //endif
   }  //end while
