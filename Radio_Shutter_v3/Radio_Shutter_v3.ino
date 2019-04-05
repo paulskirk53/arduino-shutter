@@ -75,7 +75,7 @@ void setup()
 //this delay seemed to cure the problem. fURTHER ANALYSIS - 30-3-19 shows that if power is lost to the two arduino boards 
 // i.e. command processor and shutter, the relay system activates relay 1 which is open flap
 
-delay(3000);
+delay(5000);
 
 
 
