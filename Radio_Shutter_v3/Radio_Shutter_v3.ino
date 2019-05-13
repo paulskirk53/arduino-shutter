@@ -42,7 +42,7 @@ long motor_start_time    = 0;     // used to measure how long the winch motor ru
 void setup()
 {
 
- // Serial.begin(9600);   //not required outside of testing
+ Serial.begin(9600);   //not required outside of testing
 
   // Define the pin modes. This avoids pins being low (activates realays) on power reset.
   // pinmodes for the open and close command pins and the shutter status pin
@@ -76,7 +76,7 @@ void setup()
 // i.e. command processor and shutter, the relay system activates relay 1 which is open flap
 
 delay(5000);
-
+  Serial.println("Shutter Processor ready");
 
 
 }  // end setup
@@ -124,6 +124,10 @@ void close_process()
   // commands to close shutters reverse POLARITY TO BOTH motors
 
   // Serial.println( "  closing shutter ");
+    Serial.println("---------------- CLOSE Process-------------------");
+    Serial.println("");
+    Serial.println( " closing shutter First just wait 15 seconds");
+
 
 
   int closerevcount = 0;                           //changed var name
@@ -167,6 +171,7 @@ void close_process()
       digitalWrite(FLAPRELAY1, HIGH);          // EXTENDING POLARITY - Flap CLOSES second - the way the mechanics works is that the
       digitalWrite(FLAPRELAY2, LOW);           // linear actuator has to extend to close the flap
 
+Serial.println("waiting for the flap switch to close ...");
 
   while (digitalRead(Flapclosed) == HIGH)       //high when not pushed closed, so use the NO connection to arduino for the closed state switch
   {
@@ -180,6 +185,10 @@ void close_process()
   //Serial.println (" ++++++++++++++  Flap now closed +++++++++++++" );
   // Serial.println( "  end of shutter closed routine ");
   // The flap and shutter are now closed so set the relays back to initial status -
+
+    Serial.println("---------------- END of CLOSE Process-------------------");
+    Serial.println("");
+
 
   initialise_relays();  // TURN THE POWER OFF
 
@@ -197,13 +206,19 @@ void open_process()
   // Serial.println ("Waiting for Flap to open  " + String(digitalRead( Flapopen)));
  // flaprelay1count++;
       digitalWrite(FLAPRELAY1, LOW);             // retracting polarity - Flap opens first - the mechanics means that the actuator
-	  
-	  //PUT A DEBUG HERE TO SEE IF THIS EECUTES AFTER CS# (as happened in test
-
-
-
       digitalWrite(FLAPRELAY2, HIGH);            // retracts in order to open the flap
 	  
+	    // debug prints below
+	    Serial.println("----------------Open Process-------------------");
+	    Serial.print("flap relay 1 (expect LOW)  ");
+	    Serial.println( digitalRead(FLAPRELAY1));
+	    Serial.print("flap relay 2 (expect HIGH) ");
+	    Serial.println(digitalRead(FLAPRELAY2));
+
+	    Serial.print("Flapvalue before while loop (Expect HIGH)" );
+	    Serial.println(digitalRead(Flapopen));
+
+// end debug
 
   while (digitalRead(Flapopen) == HIGH)         //high when not pushed closed, so use the NO connection to arduino for the open state switch
   {
@@ -214,6 +229,12 @@ void open_process()
 
   }
 
+    // debug prints below
+    Serial.print("Other side of while, Flapvalue (Expect LOW) " );
+    Serial.println(digitalRead(Flapopen));
+    Serial.println ("Flap should now be open wait 15 secs for shutter to open ");
+
+    
   // Serial.println ("Flap now open  ");
 
 
@@ -252,7 +273,6 @@ motor_start_time = millis();
   initialise_relays();  // TURN THE POWER OFF
 
 
-  //Serial.print( "ending Rev count is : ");
-  //Serial.println( revcount);
-  //Serial.println( "------------- shutter open - end of shutter open routine ");
+    Serial.println("---------------- END of Open Process-------------------");
+    Serial.println("");
 }// end  OS
