@@ -1,4 +1,4 @@
-//this version tested on a board with wies, manually connected disconnected to simulate shutter open/ close
+//this version tested on a board with wires, manually connected disconnected to simulate shutter open/ close
 // and flap open / close.
 // 29-3-19 changed the revcount variables so that they are separate for open/ close. this seemed to fix the 
 // problem of needing 5 switch closures for open and six for close. I have no idea why - there is no logic.
@@ -15,24 +15,24 @@
 // pin definitions for shutter relays
 
 // These data pins link to  Relay board pins IN1, IN2, in3 and IN4
-#define FLAPRELAY1  4      // arduino  pin 4
-#define FLAPRELAY2  5      // arduino  pin 5
-#define SHUTTERRELAY3  6      // etc
-#define SHUTTERRELAY4  3     // 
+#define FLAPRELAY1     4   // arduino  pin 4
+#define FLAPRELAY2     5   // arduino  pin 5
+#define SHUTTERRELAY3  6   // etc
+#define SHUTTERRELAY4  3  
 
 // shutter microswitches
 
 //Pin 11 was defined here previously, but no longer used. It is still brought out from the arduino as pin 11 blue wire to the terminal block
-#define Flapopen       42                   //connected to new limit mechanism with aluminium and wood disc actuator
-#define Flapclosed     38                    //connected to new limit mechanism with aluminium and wood disc actuator
-#define shutter_limit_switch  9             // now used to detect transitions on the winch cam
-#define open_shutter_command 36             //input pin
-#define close_shutter_command 47            //input pin
-#define shutter_status 48                   //OUTPUT pin
+#define Flapopen              42             // connected to new limit mechanism with aluminium and wood disc actuator
+#define Flapclosed            38             // connected to new limit mechanism with aluminium and wood disc actuator
+#define shutter_limit_switch   9             // now used to detect transitions on the winch cam
+#define open_shutter_command  36             // input pin
+#define close_shutter_command 47             // input pin
+#define shutter_status        48             // OUTPUT pin
 
-String last_state = "closed";
+String last_state        = "closed";
 const int number_of_revs = 5;     // set this empirically depending upon number of turns of the winch required to open / close the shutter
-long motor_time_limit    = 30000; // 30 second limit for winch motor to be active
+long motor_time_limit    = 12000; // 30 second limit for winch motor to be active
 long motor_start_time    = 0;     // used to measure how long the winch motor runs
 //int flaprelay1count = 0;        // used for testing with breakpoints
 // boolean os, cs;
@@ -46,24 +46,24 @@ void setup()
 
   // Define the pin modes. This avoids pins being low (activates realays) on power reset.
   // pinmodes for the open and close command pins and the shutter status pin
-  pinMode(open_shutter_command, INPUT_PULLUP);
+  pinMode(open_shutter_command,  INPUT_PULLUP);
   pinMode(close_shutter_command, INPUT_PULLUP);
-  pinMode(shutter_status, OUTPUT);           //this routine sets this pin and it is read by the command processor arduino
+  pinMode(shutter_status,        OUTPUT);           //this routine sets this pin and it is read by the command processor arduino
   
-  digitalWrite(shutter_status, HIGH);        // HIGH means closed
+  digitalWrite(shutter_status,   HIGH);        // HIGH means closed
 
   // pinmodes for shutter and flap relays
   // Initialise the Arduino data pins for OUTPUT
 
-  pinMode(FLAPRELAY1, OUTPUT);
-  pinMode(FLAPRELAY2, OUTPUT);
+  pinMode(FLAPRELAY1,    OUTPUT);
+  pinMode(FLAPRELAY2,    OUTPUT);
   pinMode(SHUTTERRELAY3, OUTPUT);
   pinMode(SHUTTERRELAY4, OUTPUT);
 
   // initialsie the pins for shutter and flap microswitches - input_pullup sets initial state to 1
   pinMode(shutter_limit_switch, INPUT_PULLUP);
-  pinMode (Flapopen, INPUT_PULLUP);
-  pinMode (Flapclosed, INPUT_PULLUP);
+  pinMode (Flapopen,            INPUT_PULLUP);
+  pinMode (Flapclosed,          INPUT_PULLUP);
 
 
   // ALL THE RELAYS ARE ACTIVE LOW, SO SET THEM ALL HIGH AS THE INITIAL STATE
@@ -112,8 +112,8 @@ void loop()
 void initialise_relays()
 {
   //  Serial.println( "  Initialising relays ");
-  digitalWrite(FLAPRELAY1, HIGH);
-  digitalWrite(FLAPRELAY2, HIGH);
+  digitalWrite(FLAPRELAY1,    HIGH);
+  digitalWrite(FLAPRELAY2,    HIGH);
   digitalWrite(SHUTTERRELAY3, HIGH);
   digitalWrite(SHUTTERRELAY4, HIGH);
 }
@@ -148,7 +148,7 @@ void close_process()
     // now poll the limit switch for activations as the pulley rotates
     if (digitalRead(shutter_limit_switch) == LOW)  // the limit switch has been pressed by the rotating cam
     {
-      delay(750);  // wait for the switch to open as the rotating cam moves on
+      delay(300);  // wait for the switch to open as the rotating cam moves on
       closerevcount++;
 
 
@@ -251,7 +251,7 @@ void open_process()
       digitalWrite(SHUTTERRELAY3, LOW);          // these two lines from version 2 - they set the motor direction
       digitalWrite(SHUTTERRELAY4, HIGH);
 	  
-motor_start_time = millis();
+  motor_start_time = millis();
 
   while (openrevcount <= number_of_revs )
   {
@@ -263,7 +263,7 @@ motor_start_time = millis();
     // now poll the limit switch for activations as the pulley rotates
     if (digitalRead(shutter_limit_switch) == LOW)   // the limit switch has been pressed by the rotating cam
     {
-      delay(750);  // wait for the switch to open as the rotating cam moves on
+      delay(250);  // wait for the switch to open as the rotating cam moves on
       openrevcount++;
 
 
