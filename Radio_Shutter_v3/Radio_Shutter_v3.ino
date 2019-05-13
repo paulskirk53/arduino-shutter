@@ -23,10 +23,10 @@
 // shutter microswitches
 
 //Pin 11 was defined here previously, but no longer used. It is still brought out from the arduino as pin 11 blue wire to the terminal block
-#define Flapopen       12                    //connected to new limit mechanism with aluminium and wood disc actuator
-#define Flapclosed     11                    //connected to new limit mechanism with aluminium and wood disc actuator
+#define Flapopen       42                   //connected to new limit mechanism with aluminium and wood disc actuator
+#define Flapclosed     38                    //connected to new limit mechanism with aluminium and wood disc actuator
 #define shutter_limit_switch  9             // now used to detect transitions on the winch cam
-#define open_shutter_command 46             //input pin
+#define open_shutter_command 36             //input pin
 #define close_shutter_command 47            //input pin
 #define shutter_status 48                   //OUTPUT pin
 
