@@ -23,6 +23,8 @@
 void initialise_relays();
 void close_process();
 void open_process();
+void resin_shutter_open_process();
+void resin_shutter_close_process();
 
 #include "pins_arduino.h" 
 #include "arduino.h"

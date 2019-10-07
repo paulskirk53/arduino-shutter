@@ -1,48 +1,58 @@
-//this version tested on a board with wires, manually connected disconnected to simulate shutter open/ close
-// and flap open / close.
-// 29-3-19 changed the revcount variables so that they are separate for open/ close. this seemed to fix the 
-// problem of needing 5 switch closures for open and six for close. I have no idea why - there is no logic.
+//this is the BOLLOCKS to BREXIT version October 2019
+//It will have a stepper control for the shutter belt drive and a DC motor control section for the actuator which opens the bottom door
+//
+// flap now refers to the lower flap which hnges outwards
+
+//the two motors are named shutter_belt and door
+
+// revcount is no longer applicable  
 
 //TO DO
-// SET THE CONST number_of_revs to whatever is needed to work the shutter
-//
+// Routine for shutter belt
+//Routine for door
+//Shutter belt will goto and from a fixed position - no bastard sensors required - just a number of steps.
+// door will probably require sensors as it uses the linear actuator
 // this routine receives commands from the radio master arduino - OS# CS# and SS#
 // data is only returned by SS# - if the shutter is open return char message 'open' or 'closed'
 //
 //
 
+#include <AccelStepper.h>
+
+// pin definitions for step, dir and enable and create the stepper instance
+
+#define                stepPin 7             // step pin tested and works - motor moves
+#define                dirPin  8
+#define                enaPin  9             // presently n/c - the enable pin
+
+AccelStepper  stepper(AccelStepper::DRIVER, stepPin, dirPin, true);
 
 // pin definitions for shutter relays
 
 // These data pins link to  Relay board pins IN1, IN2, in3 and IN4
 #define FLAPRELAY1     4   // arduino  pin 4
 #define FLAPRELAY2     5   // arduino  pin 5
-#define SHUTTERRELAY3  6   // etc
-#define SHUTTERRELAY4  3  
+
+  
 
 // shutter microswitches
 
 //Pin 11 was defined here previously, but no longer used. It is still brought out from the arduino as pin 11 blue wire to the terminal block
 #define Flapopen              42             // connected to new limit mechanism with aluminium and wood disc actuator
 #define Flapclosed            38             // connected to new limit mechanism with aluminium and wood disc actuator
-#define shutter_limit_switch   9             // now used to detect transitions on the winch cam
+
 #define open_shutter_command  36             // input pin
 #define close_shutter_command 47             // input pin
 #define shutter_status        48             // OUTPUT pin
 
 String last_state        = "closed";
-const int number_of_revs = 5;     // set this empirically depending upon number of turns of the winch required to open / close the shutter
-long motor_time_limit    = 12000; // 30 second limit for winch motor to be active
-long motor_start_time    = 0;     // used to measure how long the winch motor runs
-//int flaprelay1count = 0;        // used for testing with breakpoints
-// boolean os, cs;
-// int opencount=0;
-// int closecount=0;
+
+
 
 void setup()
 {
 
- Serial.begin(9600);   //not required outside of testing
+ // Serial.begin(9600);   //not required outside of testing
 
   // Define the pin modes. This avoids pins being low (activates realays) on power reset.
   // pinmodes for the open and close command pins and the shutter status pin
@@ -57,11 +67,10 @@ void setup()
 
   pinMode(FLAPRELAY1,    OUTPUT);
   pinMode(FLAPRELAY2,    OUTPUT);
-  pinMode(SHUTTERRELAY3, OUTPUT);
-  pinMode(SHUTTERRELAY4, OUTPUT);
+ 
 
   // initialsie the pins for shutter and flap microswitches - input_pullup sets initial state to 1
-  pinMode(shutter_limit_switch, INPUT_PULLUP);
+  
   pinMode (Flapopen,            INPUT_PULLUP);
   pinMode (Flapclosed,          INPUT_PULLUP);
 
@@ -83,15 +92,14 @@ delay(5000);
 
 void loop()
 {
-// os=digitalRead(open_shutter_command);
-// cs=digitalRead(close_shutter_command);
+
 
   if ((digitalRead(open_shutter_command) == LOW) && (last_state == "closed"))   // open shutter command
   {
     // opencount++;
     // Serial.println ("received OS");              // for testing
     open_process();
-    digitalWrite(shutter_status, LOW) ;        // set the status pin - low is open
+    digitalWrite(shutter_status, LOW) ;            // set the status pin - low is open
     last_state = "open";
 
   }
@@ -114,66 +122,25 @@ void initialise_relays()
   //  Serial.println( "  Initialising relays ");
   digitalWrite(FLAPRELAY1,    HIGH);
   digitalWrite(FLAPRELAY2,    HIGH);
-  digitalWrite(SHUTTERRELAY3, HIGH);
-  digitalWrite(SHUTTERRELAY4, HIGH);
+ 
 }
 
 void close_process()
 {
-  // commands to close shutters
-  // commands to close shutters reverse POLARITY TO BOTH motors
-
-  // Serial.println( "  closing shutter ");
-    Serial.println("---------------- CLOSE Process-------------------");
-    Serial.println("");
-    Serial.println( " closing shutter First just wait 15 seconds");
-
-
-
-  int closerevcount = 0;                           //changed var name
-
-
-      digitalWrite(SHUTTERRELAY3, HIGH);          // closing POLARITY shutter - closes first
-      digitalWrite(SHUTTERRELAY4, LOW);
-      motor_start_time = millis();
-
-  while (closerevcount <= number_of_revs)
-  {
-
-  	  	  if ((millis() - motor_start_time) > motor_time_limit)   // don't let the motor run longer than defined time limit
-  	  	  {
-	  	  	  closerevcount = number_of_revs +1;           // kill the while loop
-  	  	  }
-
-    // now poll the limit switch for activations as the pulley rotates
-    if (digitalRead(shutter_limit_switch) == LOW)  // the limit switch has been pressed by the rotating cam
-    {
-      delay(300);  // wait for the switch to open as the rotating cam moves on
-      closerevcount++;
-
-
-    }   //  endif digital read
-
-  }  // end while
-
   
-
-  //   Serial.print( "Rev count is : ");
-  //    Serial.println( revcount);
-
-
+//close the lower resin flap first
 
   initialise_relays();  // TURN THE POWER OFF
 
   // Serial.println (" Waiting for flap to close " + String(digitalRead( Flapclosed)));
 
 
-      digitalWrite(FLAPRELAY1, HIGH);          // EXTENDING POLARITY - Flap CLOSES second - the way the mechanics works is that the
-      digitalWrite(FLAPRELAY2, LOW);           // linear actuator has to extend to close the flap
+      digitalWrite(FLAPRELAY1, HIGH);          // retracting POLARITY - Flap CLOSES first - the way the mechanics works is that the
+      digitalWrite(FLAPRELAY2, LOW);           // linear actuator has to retract to close the flap
 
-Serial.println("waiting for the flap switch to close ...");
+                                               // Serial.println("waiting for the flap switch to close ...");
 
-  while (digitalRead(Flapclosed) == HIGH)       //high when not pushed closed, so use the NO connection to arduino for the closed state switch
+  while (digitalRead(Flapclosed) == HIGH)      //keep reading the Hall sensor
   {
 
     digitalRead(Flapclosed);
@@ -181,18 +148,20 @@ Serial.println("waiting for the flap switch to close ...");
 
   }   // endwhile flapclosed
 
+                                              // Serial.println (" ++++++++++++++  Flap now closed +++++++++++++" );
+                                            // Serial.println( "  end of shutter closed routine ");
+                                            // The flap and shutter are now closed so set the relays back to initial status -
 
-  //Serial.println (" ++++++++++++++  Flap now closed +++++++++++++" );
-  // Serial.println( "  end of shutter closed routine ");
-  // The flap and shutter are now closed so set the relays back to initial status -
-
-    Serial.println("---------------- END of CLOSE Process-------------------");
-    Serial.println("");
+    // Serial.println("---------------- END of CLOSE Process-------------------");
+    // Serial.println("");
 
 
   initialise_relays();  // TURN THE POWER OFF
 
-} // end  CS
+  resin_shutter_close_process();
+
+
+} // end  Close Process
 
 
 
@@ -201,14 +170,17 @@ void open_process()
 {
 
 
-  // Open the flap first
+  // Open the resin-shutter first
 
-  // Serial.println ("Waiting for Flap to open  " + String(digitalRead( Flapopen)));
- // flaprelay1count++;
-      digitalWrite(FLAPRELAY1, LOW);             // retracting polarity - Flap opens first - the mechanics means that the actuator
-      digitalWrite(FLAPRELAY2, HIGH);            // retracts in order to open the flap
+  resin_shutter_open_process();
+
+  // now open the lower resin flap
+  initialise_relays();
+
+  digitalWrite(FLAPRELAY1, LOW);             
+  digitalWrite(FLAPRELAY2, HIGH);            
 	  
-	    // debug prints below
+	    /* debug prints below
 	    Serial.println("----------------Open Process-------------------");
 	    Serial.print("flap relay 1 (expect LOW)  ");
 	    Serial.println( digitalRead(FLAPRELAY1));
@@ -218,61 +190,34 @@ void open_process()
 	    Serial.print("Flapvalue before while loop (Expect HIGH)" );
 	    Serial.println(digitalRead(Flapopen));
 
-// end debug
+        */
 
-  while (digitalRead(Flapopen) == HIGH)         //high when not pushed closed, so use the NO connection to arduino for the open state switch
+  while (digitalRead(Flapopen) == HIGH)         // keep reading the hall sensor until it changes (i.e. flap is fully open)
   {
-// on the open brace - {digitalRead(FLAPRELAY1)}{digitalRead(FLAPRELAY2)}
+                                                // debug on the open brace - {digitalRead(FLAPRELAY1)}{digitalRead(FLAPRELAY2)}
 
-    digitalRead(Flapopen);                     // will go LOW to signify flap is fully open i.e. the switch has ben pushed closed
+    digitalRead(Flapopen);                      // will go LOW to signify flap is fully open i.e. the Hall sensor has been activated
 
 
   }
 
-    // debug prints below
-    Serial.print("Other side of while, Flapvalue (Expect LOW) " );
-    Serial.println(digitalRead(Flapopen));
-    Serial.println ("Flap should now be open wait 15 secs for shutter to open ");
-
-    
-  // Serial.println ("Flap now open  ");
-
-
   initialise_relays();  // TURN THE POWER OFF
 
 
-  // then open the shutter (winch)
+                        // Serial.println("---------------- END of Open Process-------------------");
+                        // Serial.println("");
+
+}     // end  Open Process
 
 
-  int openrevcount = 0;
+void resin_shutter_open_process()
+{
+// put stepper code in here
 
-  
-  
-      digitalWrite(SHUTTERRELAY3, LOW);          // these two lines from version 2 - they set the motor direction
-      digitalWrite(SHUTTERRELAY4, HIGH);
-	  
-  motor_start_time = millis();
+}
 
-  while (openrevcount <= number_of_revs )
-  {
-  // on the open brace {digitalRead(SHUTTERRELAY3)}{digitalRead(SHUTTERRELAY4)}
-  	 if ((millis() - motor_start_time) > motor_time_limit)   // don't let the motor run longer than defined time limit
-  	 {
-	 	  openrevcount = number_of_revs +1;           // kill the while loop
-  	 }
-    // now poll the limit switch for activations as the pulley rotates
-    if (digitalRead(shutter_limit_switch) == LOW)   // the limit switch has been pressed by the rotating cam
-    {
-      delay(250);  // wait for the switch to open as the rotating cam moves on
-      openrevcount++;
+void resin_shutter_close_process()
+{
 
 
-    }  //endif
-  }  //end while
-
-  initialise_relays();  // TURN THE POWER OFF
-
-
-    Serial.println("---------------- END of Open Process-------------------");
-    Serial.println("");
-}// end  OS
+}
