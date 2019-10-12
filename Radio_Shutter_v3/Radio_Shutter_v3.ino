@@ -46,7 +46,10 @@ AccelStepper  stepper(AccelStepper::DRIVER, stepPin, dirPin, true);
 #define shutter_status        48             // OUTPUT pin
 
 String last_state        = "closed";
-
+long openposition =   5000;                 // change this to the number of steps required
+long closeposition =  0;					// 
+int normalAcceleration;
+float StepsPerSecond;
 
 
 void setup()
@@ -54,15 +57,15 @@ void setup()
 
  // Serial.begin(9600);   //not required outside of testing
 
-  // Define the pin modes. This avoids pins being low (activates realays) on power reset.
+  // Define the pin modes. This avoids pins being low (which activates relays) on power reset.
   // pinmodes for the open and close command pins and the shutter status pin
   pinMode(open_shutter_command,  INPUT_PULLUP);
   pinMode(close_shutter_command, INPUT_PULLUP);
   pinMode(shutter_status,        OUTPUT);           //this routine sets this pin and it is read by the command processor arduino
   
-  digitalWrite(shutter_status,   HIGH);        // HIGH means closed
+  digitalWrite(shutter_status,   HIGH);            // HIGH means closed
 
-  // pinmodes for shutter and flap relays
+  // pinmodes for resin flap relays
   // Initialise the Arduino data pins for OUTPUT
 
   pinMode(FLAPRELAY1,    OUTPUT);
@@ -78,6 +81,14 @@ void setup()
   // ALL THE RELAYS ARE ACTIVE LOW, SO SET THEM ALL HIGH AS THE INITIAL STATE
 
   initialise_relays();      // sets all the relay pins HIGH for power off state
+
+  //stepper setup:
+  StepsPerSecond = 500.0;                       // changed following empirical testing
+  normalAcceleration = 50;                       // changed following empirical testing
+  stepper.setMaxSpeed(StepsPerSecond);          // steps per second see below -
+  // the controller electronics is set to 0.25 degree steps, so 15 stepspersecond*0.25= 3.75 degrees of shaft movement per second
+  stepper.setAcceleration(normalAcceleration);
+  stepper.setCurrentPosition(closeposition);   //intial position for stepper is closed
 
 // delay below introduced to give the command processor time to define its pin states, which are used by this sketch
 //there was a problem where relay 1 (OS) was activated due to indeterminate state of pin 46 as was the thinking.
@@ -114,6 +125,10 @@ void loop()
 	
   }
  // {last_state}{cs}{os}{x}{digitalRead(FLAPRELAY1)}{digitalRead(FLAPRELAY2)}{digitalRead(SHUTTERRELAY3)}{digitalRead(SHUTTERRELAY4)} {opencount} {closecount}
+  if (stepper.distanceToGo() != 0)
+  {
+    stepper.run();
+  }
 
 } // end void loop
 
@@ -212,12 +227,13 @@ void open_process()
 
 void resin_shutter_open_process()
 {
+stepper.moveTo(openposition);
 // put stepper code in here
 
 }
 
 void resin_shutter_close_process()
 {
-
+stepper.moveTo(closeposition);
 
 }
