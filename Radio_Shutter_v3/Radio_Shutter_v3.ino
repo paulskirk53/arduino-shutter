@@ -46,7 +46,7 @@ AccelStepper  stepper(AccelStepper::DRIVER, stepPin, dirPin, true);
 #define shutter_status        48             // OUTPUT pin
 
 String last_state        = "closed";
-long openposition =   5000;                 // change this to the number of steps required
+long openposition =   500;                 // change this to the number of steps required
 long closeposition =  0;					// 
 int normalAcceleration;
 float StepsPerSecond;
@@ -55,7 +55,7 @@ float StepsPerSecond;
 void setup()
 {
 
- // Serial.begin(9600);   //not required outside of testing
+  Serial.begin(9600);   //not required outside of testing
 
   // Define the pin modes. This avoids pins being low (which activates relays) on power reset.
   // pinmodes for the open and close command pins and the shutter status pin
@@ -83,7 +83,7 @@ void setup()
   initialise_relays();      // sets all the relay pins HIGH for power off state
 
   //stepper setup:
-  StepsPerSecond = 500.0;                       // changed following empirical testing
+  StepsPerSecond = 1000.0;                       // changed following empirical testing
   normalAcceleration = 50;                       // changed following empirical testing
   stepper.setMaxSpeed(StepsPerSecond);          // steps per second see below -
   // the controller electronics is set to 0.25 degree steps, so 15 stepspersecond*0.25= 3.75 degrees of shaft movement per second
@@ -104,14 +104,21 @@ delay(5000);
 void loop()
 {
 
+Serial.println(digitalRead(open_shutter_command));
+
+
+Serial.println(last_state);
+
 
   if ((digitalRead(open_shutter_command) == LOW) && (last_state == "closed"))   // open shutter command
   {
+  Serial.println("received open");					//it printed this to sermon when 36 was grounded
     // opencount++;
     // Serial.println ("received OS");              // for testing
     open_process();
     digitalWrite(shutter_status, LOW) ;            // set the status pin - low is open
     last_state = "open";
+	
 
   }
 
@@ -122,13 +129,11 @@ void loop()
     close_process();
     digitalWrite(shutter_status, HIGH) ;     // set the status pin - high is closed
     last_state = "closed";
+	Serial.println("received close");
 	
   }
  // {last_state}{cs}{os}{x}{digitalRead(FLAPRELAY1)}{digitalRead(FLAPRELAY2)}{digitalRead(SHUTTERRELAY3)}{digitalRead(SHUTTERRELAY4)} {opencount} {closecount}
-  if (stepper.distanceToGo() != 0)
-  {
-    stepper.run();
-  }
+
 
 } // end void loop
 
@@ -227,7 +232,16 @@ void open_process()
 
 void resin_shutter_open_process()
 {
+Serial.println("resin shutter open process");
 stepper.moveTo(openposition);
+
+  while (stepper.distanceToGo() != 0)
+  {
+	  stepper.run();
+	  Serial.println("stepper run...");
+  }
+
+
 // put stepper code in here
 
 }
