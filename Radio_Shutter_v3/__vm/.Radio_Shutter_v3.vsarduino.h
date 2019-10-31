@@ -25,6 +25,9 @@ void close_process();
 void open_process();
 void resin_shutter_open_process();
 void resin_shutter_close_process();
+void measure_and_stop();
+void resin_flap_close_process();
+void resin_flap_open_process();
 
 #include "pins_arduino.h" 
 #include "arduino.h"
