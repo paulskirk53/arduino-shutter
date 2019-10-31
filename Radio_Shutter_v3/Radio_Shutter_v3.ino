@@ -1,20 +1,21 @@
 //this is the BOLLOCKS to BREXIT version October 2019
 //It will have a stepper control for the shutter belt drive and a DC motor control section for the actuator which opens the bottom door
 //
-// this routine processes commands handed off by the coommand processor. This means that processes executed here (open close shutter and flap)
+// this routine processes commands handed off by the command processor. This means that processes executed here (open close shutter and flap)
 // are non blocking from the ASCOM driver's perspective.
-// flap now refers to the lower resin flap which hnges outwards
+// flap now refers to the lower resin flap which hinges outwards
 // this routine receives commands from the radio master arduino - OS# CS# and SS#
 // data is only returned by SS# - if the shutter is open return char message 'open' or 'closed'
-//
+
+//New November 2019 Shutter open and close by physical button press.
+// investigate just adding temp action buttons onto the open and close pins - 36 and 47 (open, close)
 
 #include <AccelStepper.h>
 
 // step, dir and enable pin definitions
-
-#define                stepPin 7             // step pin tested and works - motor moves
-#define                dirPin  8
-#define                enaPin  9             // presently n/c - the enable pin
+#define       stepPin 7             // step pin tested and works - motor moves
+#define       dirPin  8
+#define       enaPin  9             // presently n/c - the enable pin
 
 // create the stepper instance
 AccelStepper  stepper(AccelStepper::DRIVER, stepPin, dirPin, true);
@@ -62,8 +63,8 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	pinMode(FLAPRELAY1,    OUTPUT);
 	pinMode(FLAPRELAY2,    OUTPUT);
 
-
-	// initialsie the pins for shutter and flap microswitches - input_pullup sets initial state to 1
+	
+	// initialise the pins for shutter and flap microswitches - input_pullup sets initial state to 1
 
 	pinMode (Flapopen,            INPUT_PULLUP);
 	pinMode (Flapclosed,          INPUT_PULLUP);
