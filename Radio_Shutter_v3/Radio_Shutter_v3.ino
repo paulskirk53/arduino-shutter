@@ -176,14 +176,36 @@ void measure_and_stop()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
 
 	while ((stepper.distanceToGo() != 0)   && (digitalRead( emergency_stop)==HIGH)) // if the motor is not there yet, and the emergency stop is not pressed, keep it running
-	{
+		{
 	
-		stepper.run();
-		Serial.println("stepper run...");  // req'd for debug only
+			stepper.run();
+			Serial.println("stepper run...");  // req'd for debug only
 
-	}
+		}
+
 	Serial.println("stepper stopped...");
+
+	check_for_emergency_stop();
+
 } // end measure and stop ----------------------------------------------------------------------------------------------
+
+void check_for_emergency_stop()
+{
+
+  if ((digitalRead(emergency_stop)==LOW) && (last_state == "closed"))
+    {
+	  stepper.setCurrentPosition(openposition);
+    }
+
+  if ((digitalRead(emergency_stop)==LOW) && (last_state == "open"))
+    {
+	  stepper.setCurrentPosition(closeposition);
+    }
+
+}
+
+
+
 
 void resin_flap_close_process() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
