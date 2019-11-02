@@ -1,5 +1,5 @@
 
-// NB modded to only run the stepper for open and close - remove the commented out lines for resin flap open and close for a fully functioning version.
+// NB modded to only run the stepper for open and close - remove the commented out lines for flap open and close for a fully functioning version.
 
 // if emergency stop is pressed, in order to continue operation, the following procedure is required:
 // if emergency stop interrupts an open operation, the system sets the last_state variable to open, so press the close button to move from the partially
@@ -14,7 +14,7 @@
 //
 // this routine processes commands handed off by the command processor. This means that processes executed here (open close shutter and flap)
 // are non blocking from the ASCOM driver's perspective.
-// flap now refers to the lower resin flap which hinges outwards
+// flap now refers to the lower flap which hinges outwards
 // this routine receives commands from the radio master arduino - OS# CS# and SS#
 // data is only returned by SS# - if the shutter is open return char message 'open' or 'closed'
 
@@ -74,7 +74,7 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	digitalWrite(shutter_status,   HIGH);             // HIGH means closed
 
-	// pinmodes for resin flap relays
+	// pinmodes for flap relays
 	// Initialise the Arduino data pins for OUTPUT
 
 	pinMode(FLAPRELAY1,            OUTPUT) ;
@@ -153,34 +153,34 @@ void initialise_relays() // ++++++++++++++++++++++++++++++++++++++++++++++++++++
 void close_process() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
 
-	// resin_flap_close_process();
-	resin_shutter_close_process();
+	// flap_close_process();
+	shutter_close_process();
 
 } // end  Close Process ---------------------------------------------------------------------------------------------
 
 void open_process()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
-	// Open the resin-shutter first, then the lower flap
+	// Open the shutter first, then the lower flap
 
-	resin_shutter_open_process();
-	// resin_flap_open_process();
+	shutter_open_process();
+	// flap_open_process();
 
 }     // end Open Process ----------------------------------------------------------------------------------------------
 
-void resin_shutter_open_process()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void shutter_open_process()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
-	Serial.println("resin shutter open process");  // testing only
+	Serial.println("shutter open process");  // testing only
 	stepper.moveTo(openposition);
 	measure_and_stop();                            //detect proximity (in steps) to the open position. stop when open
 
-} // end resin shutter open process -------------------------------------------------------------------------------------
+} // end shutter open process -------------------------------------------------------------------------------------
 
-void resin_shutter_close_process() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void shutter_close_process() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
 	stepper.moveTo(closeposition);
 	measure_and_stop();                            //detect proximity (in steps) to the closed position. stop when closed
 	
-} // end resin shutter close process -------------------------------------------------------------------------------------- -
+} // end shutter close process -------------------------------------------------------------------------------------- -
 
 void measure_and_stop()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
@@ -217,9 +217,9 @@ void check_for_emergency_stop()
 
 
 
-void resin_flap_close_process() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void flap_close_process() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
-	//close the resin flap
+	//close the flap
 
 	initialise_relays();  // TURN THE POWER OFF
 
@@ -239,13 +239,13 @@ void resin_flap_close_process() // +++++++++++++++++++++++++++++++++++++++++++++
 
 	initialise_relays();  // TURN THE POWER OFF
 
-} // end void resin_flap_close_process() ------------------------------------------------------------------------------------
+} // end void flap_close_process() ------------------------------------------------------------------------------------
 
 
-void resin_flap_open_process() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void flap_open_process() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 {
-	// open the resin flap
+	// open the flap
 	initialise_relays();
 
 	digitalWrite(FLAPRELAY1, LOW);
@@ -262,4 +262,4 @@ void resin_flap_open_process() // ++++++++++++++++++++++++++++++++++++++++++++++
 
 	initialise_relays();  // TURN THE POWER OFF
 
-} // end void resin_flap_open_process()  ------------------------------------------------------------------------------------
+} // end void flap_open_process()  ------------------------------------------------------------------------------------
