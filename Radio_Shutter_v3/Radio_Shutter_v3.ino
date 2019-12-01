@@ -2,10 +2,10 @@
 // NB modded to only run the stepper for open and close - remove the commented out lines for flap open and close for a fully functioning version.
 
 // if emergency stop is pressed, in order to continue operation, the following procedure is required:
-// if emergency stop interrupts an open operation, the system sets the last_state variable to open, so press the close button to move from the partially
-// open state
-// if emergency stop interrupts a close operation, the system sets the last_state variable to closed, so press the open button to move from the partially
-// closed state
+// if emergency stop interrupts an open operation, the system sets the last_state variable to open and the stepper position to open, so press the close button
+// to move from the partially open state to the closed state.
+// if emergency stop interrupts a close operation, the system sets the last_state variable to closed, and the stepper position to closed so press the open button
+// to move from the partially closed state to the open state.
 
 
 
@@ -97,7 +97,7 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	stepper.setMaxSpeed(StepsPerSecond);           // steps per second see below -
 	// the controller electronics is set to 0.25 degree steps, so 15 stepspersecond*0.25= 3.75 degrees of shaft movement per second
 	stepper.setAcceleration(normalAcceleration);
-	stepper.setCurrentPosition(closeposition);     // intial position for stepper is closed
+	stepper.setCurrentPosition(closeposition);     // initial position for stepper is closed
 	
 
 	last_state    = "closed" ;
@@ -186,12 +186,12 @@ void measure_and_stop()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
 
 	while ((stepper.distanceToGo() != 0)   && (digitalRead( emergency_stop)==HIGH)) // if the motor is not there yet, and the emergency stop is not pressed, keep it running
-		{
+	  {
 	
-			stepper.run();
-			Serial.println("stepper run...");  // req'd for debug only
+		stepper.run();
+		Serial.println("stepper run...");  // req'd for debug only
 
-		}
+	  }
 
 	Serial.println("stepper stopped...");
 
@@ -199,7 +199,7 @@ void measure_and_stop()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 } // end measure and stop ----------------------------------------------------------------------------------------------
 
-void check_for_emergency_stop()
+void check_for_emergency_stop() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
 
   if ((digitalRead(emergency_stop)==LOW) && (last_state == "closed"))
@@ -212,9 +212,7 @@ void check_for_emergency_stop()
 	  stepper.setCurrentPosition(closeposition);
     }
 
-}
-
-
+} // end ----------------------------------------------------------------------------------------------
 
 
 void flap_close_process() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -232,7 +230,7 @@ void flap_close_process() // +++++++++++++++++++++++++++++++++++++++++++++++++++
 	while (digitalRead(Flapclosed) == HIGH)      //keep reading the Hall sensor
 	{
 
-		digitalRead(Flapclosed);
+		digitalRead(Flapclosed);                  // this is a redundant statement
 
 	}   // endwhile flapclosed
 
@@ -256,7 +254,7 @@ void flap_open_process() // ++++++++++++++++++++++++++++++++++++++++++++++++++++
 	{
 		// debug on the open brace - {digitalRead(FLAPRELAY1)}{digitalRead(FLAPRELAY2)}
 
-		digitalRead(Flapopen);                      // will go LOW to signify flap is fully open i.e. the Hall sensor has been activated
+		digitalRead(Flapopen);                      // this is a redundant statement
 
 	}
 
