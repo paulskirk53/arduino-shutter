@@ -185,7 +185,7 @@ void shutter_close_process() // ++++++++++++++++++++++++++++++++++++++++++++++++
 void measure_and_stop()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
 
-	while ((stepper.distanceToGo() != 0)   && (digitalRead( emergency_stop)==HIGH)) // if the motor is not there yet, and the emergency stop is not pressed, keep it running
+	while ((stepper.distanceToGo() != 0)   && (digitalRead( emergency_stop)==LOW)) // if the motor is not there yet, and the emergency stop is not pressed, keep it running
 	  {
 	
 		stepper.run();
@@ -202,12 +202,12 @@ void measure_and_stop()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++
 void check_for_emergency_stop() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
 
-  if ((digitalRead(emergency_stop)==LOW) && (last_state == "closed"))
+  if ((digitalRead(emergency_stop)==HIGH) && (last_state == "closed")) // the ES button is NC, so it goes high when pressed
     {
 	  stepper.setCurrentPosition(openposition);
     }
 
-  if ((digitalRead(emergency_stop)==LOW) && (last_state == "open"))
+  if ((digitalRead(emergency_stop)==HIGH) && (last_state == "open"))
     {
 	  stepper.setCurrentPosition(closeposition);
     }
