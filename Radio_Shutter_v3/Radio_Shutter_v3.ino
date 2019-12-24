@@ -1,7 +1,4 @@
-// PROBLEM IS WHEN THIS mcu BOOTS it provides this on the TEST sermon connection:
-//Shutter Processor ready
-//received open
-//shutter open process
+
 
 // NB modded to only run the stepper for open and close - remove the commented out lines for flap open and close for a fully functioning version.
 
@@ -23,7 +20,7 @@
 // data is only returned by SS# - if the shutter is open return char message 'open' or 'closed'
 
 //New November 2019 Shutter open and close by physical button press.
-// investigate just adding temp action buttons onto the open and close pins - 36 and 47 (open, close)
+
 
 
 // Compiler declarations follow
@@ -47,20 +44,23 @@ AccelStepper  stepper(AccelStepper::DRIVER, stepPin, dirPin, true);
 // shutter microswitch pin definitions
 
 //Pin 11 was defined here previously, but no longer used. It is still brought out from the arduino as pin 11 blue wire to the terminal block
-#define Flapopen              42             // these two pins are connected to new limit mechanism for the lower flap
-#define Flapclosed            38
+#define Flapopen                  42             // these two pins are connected to new limit mechanism for the lower flap
+#define Flapclosed                38
 
-#define open_shutter_command  36             // input pin
-#define close_shutter_command 47             // input pin
-#define emergency_stop	      30             // input pin
-#define shutter_status        48             // OUTPUT pin
+#define open_shutter_command      36             // input pin
+#define close_shutter_command     47             // input pin
+#define emergency_stop	          30             // input pin
+#define shutter_status            48             // OUTPUT pin
+#define push_button_open_shutter  52             // to hand controll switch unit
+#define push_button_close_shutter 53             // to hand controll switch unit
 
 String last_state         ;
 long   openposition       ;
 long   closeposition      ;
 int    normalAcceleration ;
 float  StepsPerSecond     ;
-
+bool   open_command       ;
+bool   close_command      ;
 
 // end declarations -------------------------------------------------------------------------------------------------------
 
@@ -71,10 +71,13 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   // Define the pin modes. This avoids pins being low (which activates relays) on power reset.
   // pinmodes for the open, close and emergency stop command pins and the shutter status pin
-  pinMode(open_shutter_command,  INPUT_PULLUP) ;
-  pinMode(close_shutter_command, INPUT_PULLUP) ;
-  pinMode(emergency_stop,        INPUT_PULLUP) ;    // user push button to stop the motor
-  pinMode(shutter_status,        OUTPUT)       ;    // this routine sets this pin and it is read by the command processor arduino
+  pinMode(open_shutter_command,       INPUT_PULLUP) ;
+  pinMode(close_shutter_command,      INPUT_PULLUP) ;
+  pinMode(emergency_stop,             INPUT_PULLUP) ;    // user push button to stop the motor
+  pinMode(shutter_status,             OUTPUT)       ;    // this routine sets this pin and it is read by the command processor arduino
+
+  pinMode(push_button_open_shutter,   INPUT_PULLUP) ;
+  pinMode(push_button_close_shutter,  INPUT_PULLUP) ;
 
   digitalWrite(shutter_status,   HIGH);             // HIGH means closed
 
@@ -121,9 +124,12 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 void loop() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
+  open_command  = (digitalRead(open_shutter_command))  | (digitalRead(push_button_open_shutter));
+  close_command = (digitalRead(close_shutter_command)) | (digitalRead(push_button_close_shutter));
+
   // Serial.println(last_state); //testing only
 
-  if ((digitalRead(open_shutter_command) == LOW) && (last_state == "closed"))   // open shutter command
+  if (open_command && (last_state == "closed"))    // open shutter command
   {
     Serial.println("received open");               // testing only print this to sermon when 36 was grounded
 
@@ -133,18 +139,17 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   }
 
-  if ((digitalRead(close_shutter_command) == LOW) && (last_state == "open")) // close shutter command
+  if (close_command && (last_state == "open")) // close shutter command
   {
     Serial.println("received close");          // testing only
-    
+
     close_process();
     digitalWrite(shutter_status, HIGH) ;       // set the status pin - high is closed
     last_state = "closed";
 
 
   }
-  // {last_state}{cs}{os}{x}{digitalRead(FLAPRELAY1)}{digitalRead(FLAPRELAY2)}{digitalRead(SHUTTERRELAY3)}{digitalRead(SHUTTERRELAY4)} {opencount} {closecount}
-
+ 
 } // end void loop ----------------------------------------------------------------------------------------------------------
 
 void initialise_relays() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
