@@ -1,5 +1,5 @@
 
-
+// Ready to test with handset
 // NB modded to only run the stepper for open and close - remove the commented out lines for flap open and close for a fully functioning version.
 
 // if emergency stop is pressed, in order to continue operation, the following procedure is required:
@@ -51,8 +51,8 @@ AccelStepper  stepper(AccelStepper::DRIVER, stepPin, dirPin, true);
 #define close_shutter_command     47             // input pin
 #define emergency_stop	          30             // input pin
 #define shutter_status            48             // OUTPUT pin
-#define push_button_open_shutter  52             // to hand controll switch unit
-#define push_button_close_shutter 53             // to hand controll switch unit
+#define push_button_open_shutter  52             // green to hand controll switch unit
+#define push_button_close_shutter 53             // blue to hand controll switch unit
 
 String last_state         ;
 long   openposition       ;
