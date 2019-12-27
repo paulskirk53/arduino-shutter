@@ -76,7 +76,7 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   pinMode(emergency_stop,             INPUT_PULLUP) ;    // user push button to stop the motor
   pinMode(shutter_status,             OUTPUT)       ;    // this routine sets this pin and it is read by the command processor arduino
 
-  pinMode(push_button_open_shutter,   INPUT_PULLUP) ;
+  pinMode(push_button_open_shutter,   INPUT) ;           //changed from INPUT_PULLUP
   pinMode(push_button_close_shutter,  INPUT_PULLUP) ;
 
   digitalWrite(shutter_status,   HIGH);             // HIGH means closed
@@ -124,10 +124,33 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 void loop() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
-  open_command  = (digitalRead(open_shutter_command))  | (digitalRead(push_button_open_shutter));
-  close_command = (digitalRead(close_shutter_command)) | (digitalRead(push_button_close_shutter));
+  open_command = false;
+  close_command = false;
 
-  // Serial.println(last_state); //testing only
+//Serial.print("open shutter command pin read gives ");
+//Serial.println(digitalRead(open_shutter_command));
+
+//Serial.print("close shutter command pin read gives ");
+//Serial.println(digitalRead(close_shutter_command));
+//delay(500);
+
+  if ( (digitalRead(open_shutter_command) == LOW)  | (digitalRead(push_button_open_shutter) == LOW)) //
+  {
+    open_command  = true;
+  }
+
+  if   ( (digitalRead(close_shutter_command) == LOW) | (digitalRead(push_button_close_shutter) == LOW))
+  {
+    close_command = true;
+  }
+  
+  //Serial.print("Open command = ");
+  //Serial.println(open_command);
+
+  //Serial.print("Close command = ");
+  //Serial.println(close_command);
+  //delay(500);
+  
 
   if (open_command && (last_state == "closed"))    // open shutter command
   {
@@ -149,7 +172,7 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
   }
- 
+
 } // end void loop ----------------------------------------------------------------------------------------------------------
 
 void initialise_relays() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
