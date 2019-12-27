@@ -1,3 +1,4 @@
+// when closing, if there was an open emergency, then the current position is the interrupted position and target is closedposition
 
 // Ready to test with handset
 // NB modded to only run the stepper for open and close - remove the commented out lines for flap open and close for a fully functioning version.
@@ -54,13 +55,17 @@ AccelStepper  stepper(AccelStepper::DRIVER, stepPin, dirPin, true);
 #define push_button_open_shutter  52             // green to hand controll switch unit
 #define push_button_close_shutter 53             // blue to hand controll switch unit
 
-String last_state         ;
-long   openposition       ;
-long   closeposition      ;
-int    normalAcceleration ;
-float  StepsPerSecond     ;
-bool   open_command       ;
-bool   close_command      ;
+String last_state           ;
+long   openposition         ;
+long   closeposition        ;
+long   target_position      ;
+long   interrupted_position ;
+int    normalAcceleration   ;
+float  StepsPerSecond       ;
+bool   open_command         ;
+bool   close_command        ;
+bool   open_emergency       ;
+bool   close_emergency       ;
 
 // end declarations -------------------------------------------------------------------------------------------------------
 
@@ -107,9 +112,11 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   stepper.setCurrentPosition(closeposition);     // initial position for stepper is closed
 
 
-  last_state    = "closed" ;
-  openposition  = 8000     ;                     // correct
-  closeposition = 0        ;
+  last_state      = "closed" ;
+  openposition    = 8000     ;                     // correct
+  closeposition   = 0        ;
+  open_emergency  = false    ;
+  close_emergency = false    ;
 
   // delay below introduced to give the command processor time to define its pin states, which are used by this sketch
   //there was a problem where relay 1 (OS) was activated due to indeterminate state of pin 46 as was the thinking.
@@ -127,12 +134,12 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   open_command = false;
   close_command = false;
 
-//Serial.print("open shutter command pin read gives ");
-//Serial.println(digitalRead(open_shutter_command));
+  //Serial.print("open shutter command pin read gives ");
+  //Serial.println(digitalRead(open_shutter_command));
 
-//Serial.print("close shutter command pin read gives ");
-//Serial.println(digitalRead(close_shutter_command));
-//delay(500);
+  //Serial.print("close shutter command pin read gives ");
+  //Serial.println(digitalRead(close_shutter_command));
+  //delay(500);
 
   if ( (digitalRead(open_shutter_command) == LOW)  | (digitalRead(push_button_open_shutter) == LOW)) //
   {
@@ -143,14 +150,14 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   {
     close_command = true;
   }
-  
+
   //Serial.print("Open command = ");
   //Serial.println(open_command);
 
   //Serial.print("Close command = ");
   //Serial.println(close_command);
   //delay(500);
-  
+
 
   if (open_command && (last_state == "closed"))    // open shutter command
   {
@@ -203,7 +210,15 @@ void open_process()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void shutter_open_process()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
   Serial.println("shutter open process");  // testing only
+  if (close_emergency)
+  {
+    Serial.print("interrupted pos in shutter open process is ");
+    Serial.println(interrupted_position);
+    stepper.setCurrentPosition(interrupted_position);
+    close_emergency = false;
+  }
   stepper.moveTo(openposition);
+
   measure_and_stop();                            //detect proximity (in steps) to the open position. stop when open
 
 } // end shutter open process -------------------------------------------------------------------------------------
@@ -211,6 +226,12 @@ void shutter_open_process()  // ++++++++++++++++++++++++++++++++++++++++++++++++
 void shutter_close_process() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
   Serial.println("Shutter close Process");          // testing only
+  if (open_emergency)
+  {
+    stepper.setCurrentPosition(interrupted_position);
+    open_emergency = false;
+  }
+
   stepper.moveTo(closeposition);
   measure_and_stop();                            //detect proximity (in steps) to the closed position. stop when closed
 
@@ -218,20 +239,23 @@ void shutter_close_process() // ++++++++++++++++++++++++++++++++++++++++++++++++
 
 void measure_and_stop()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
-  long j = 0;                                // used just for counting steps
+
+  Serial.print("distance to go function value " );
+  Serial.println(stepper.distanceToGo());
+
   while ((stepper.distanceToGo() != 0)   && (digitalRead( emergency_stop) == LOW)) // if the motor is not there yet, and the emergency stop is not pressed, keep it running
   {
-    j ++;                                    //stepper.currentPosition();
+    //stepper.currentPosition();
     stepper.run();
     //	Serial.println("stepper run...");  // req'd for debug only
 
   }
 
-  Serial.print("stepper stopped...ran for " );
-  Serial.print(j);
-  Serial.println(" iterations");
+
+  // Serial.println(" Steps");
   Serial.print("Steper current position is ");
   Serial.println(stepper.currentPosition());
+
   check_for_emergency_stop();
 
 } // end measure and stop ----------------------------------------------------------------------------------------------
@@ -241,13 +265,17 @@ void check_for_emergency_stop() // +++++++++++++++++++++++++++++++++++++++++++++
 
   // this routine sets the stepper position to either open or closed if the emergency stop is pressed.
 
-  if ((digitalRead(emergency_stop) == HIGH) && (last_state == "closed")) // the ES button is NC, so it goes high when pressed
+  if ((digitalRead(emergency_stop) == HIGH) && (last_state == "closed")) // shutter was opening
   {
+    open_emergency = true;
+    interrupted_position = stepper.currentPosition();
     stepper.setCurrentPosition(openposition);
   }
 
-  if ((digitalRead(emergency_stop) == HIGH) && (last_state == "open"))
+  if ((digitalRead(emergency_stop) == HIGH) && (last_state == "open"))    // shutter was closing
   {
+    close_emergency = true;
+    interrupted_position = stepper.currentPosition();
     stepper.setCurrentPosition(closeposition);
   }
 
