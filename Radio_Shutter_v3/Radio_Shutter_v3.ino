@@ -1,17 +1,4 @@
-// when closing, if there was an open emergency, then the current position is the interrupted position and target is closedposition
-
-// Ready to test with handset
-// NB modded to only run the stepper for open and close - remove the commented out lines for flap open and close for a fully functioning version.
-
-// if emergency stop is pressed, in order to continue operation, the following procedure is required:
-// if emergency stop interrupts an open operation, the system sets the last_state variable to open and the stepper position to open, so press the close button
-// to move from the partially open state to the closed state. NO THIS WILL TRY TO MOVE THE SHUTTER THE FULL DISTANCE NOT THE DISTANCE FROM WHERE ES HAPPENED
-// if emergency stop interrupts a close operation, the system sets the last_state variable to closed, and the stepper position to closed so press the open button
-// to move from the partially closed state to the open state.  NO THIS WILL TRY TO MOVE THE SHUTTER THE FULL DISTANCE NOT THE DISTANCE FROM WHERE ES HAPPENED
-
-
-
-//this is the BOLLOCKS to BREXIT version October 2019
+//If open or close is interrupted by an emergency stop button press, just press the same button again e.g. Open/ ES/ Open
 //It has a stepper control for the shutter belt drive and a DC motor control section for the actuator which opens the bottom flap
 //
 // this routine processes commands handed off by the command processor. This means that processes executed here (open close shutter and flap)
@@ -19,8 +6,6 @@
 // flap now refers to the lower flap which hinges outwards
 // this routine receives commands from the radio master arduino - OS# CS# and SS#
 // data is only returned by SS# - if the shutter is open return char message 'open' or 'closed'
-
-//New November 2019 Shutter open and close by physical button press.
 
 
 
@@ -58,14 +43,12 @@ AccelStepper  stepper(AccelStepper::DRIVER, stepPin, dirPin, true);
 String last_state           ;
 long   openposition         ;
 long   closeposition        ;
-long   target_position      ;
-long   interrupted_position ;
+
 int    normalAcceleration   ;
 float  StepsPerSecond       ;
 bool   open_command         ;
 bool   close_command        ;
-bool   open_emergency       ;
-bool   close_emergency       ;
+
 
 // end declarations -------------------------------------------------------------------------------------------------------
 
@@ -107,21 +90,19 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   StepsPerSecond     = 500.0 ;                   // changed following empirical testing
   normalAcceleration = 50     ;                  // changed following empirical testing
   stepper.setMaxSpeed(StepsPerSecond);           // steps per second see below -
-  // the controller electronics is set to 0.25 degree steps, so 15 stepspersecond*0.25= 3.75 degrees of shaft movement per second
+  // if the controller electronics is set to 0.25 degree steps, 15 stepspersecond*0.25= 3.75 degrees of shaft movement per second
   stepper.setAcceleration(normalAcceleration);
   stepper.setCurrentPosition(closeposition);     // initial position for stepper is closed
 
 
   last_state      = "closed" ;
-  openposition    = 8000     ;                     // correct
+  openposition    = 4000     ;                 //set back to  8000; once tests are complete
   closeposition   = 0        ;
-  open_emergency  = false    ;
-  close_emergency = false    ;
+
+
 
   // delay below introduced to give the command processor time to define its pin states, which are used by this sketch
   //there was a problem where relay 1 (OS) was activated due to indeterminate state of pin 46 as was the thinking.
-  //this delay seemed to cure the problem. fURTHER ANALYSIS - 30-3-19 shows that if power is lost to the two arduino boards
-  // i.e. command processor and shutter, the relay system activates relay 1 which is open flap
 
   delay(5000) ;
   Serial.println("Shutter Processor ready");
@@ -131,155 +112,128 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 void loop() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
-  open_command = false;
-  close_command = false;
-
-  //Serial.print("open shutter command pin read gives ");
-  //Serial.println(digitalRead(open_shutter_command));
-
-  //Serial.print("close shutter command pin read gives ");
-  //Serial.println(digitalRead(close_shutter_command));
-  //delay(500);
-
-  if ( (digitalRead(open_shutter_command) == LOW)  | (digitalRead(push_button_open_shutter) == LOW)) //
+  while (digitalRead(emergency_stop) == LOW)    // the ES is normally low and goes open circuit (HIGH) when pressed.
   {
-    open_command  = true;
-  }
+    open_command = false;
+    close_command = false;
 
-  if   ( (digitalRead(close_shutter_command) == LOW) | (digitalRead(push_button_close_shutter) == LOW))
-  {
-    close_command = true;
-  }
+    // Serial.print("open shutter command pin read gives ");
+    //Serial.println(digitalRead(open_shutter_command));
 
-  //Serial.print("Open command = ");
-  //Serial.println(open_command);
+    //Serial.print("close shutter command pin read gives ");
+    //Serial.println(digitalRead(close_shutter_command));
+    //delay(500);
 
-  //Serial.print("Close command = ");
-  //Serial.println(close_command);
-  //delay(500);
+    if ( (digitalRead(open_shutter_command) == LOW)  | (digitalRead(push_button_open_shutter) == LOW)) //
+    {
+      open_command  = true;
+    }
 
+    if   ( (digitalRead(close_shutter_command) == LOW) | (digitalRead(push_button_close_shutter) == LOW))
+    {
+      close_command = true;
+    }
 
-  if (open_command && (last_state == "closed"))    // open shutter command
-  {
-    Serial.println("received open");               // testing only print this to sermon when 36 was grounded
+    //Serial.print("Open command = ");
+    //Serial.println(open_command);
 
-    open_process() ;
-    digitalWrite(shutter_status, LOW) ;            // set the status pin - low is shutters open
-    last_state = "open" ;
-
-  }
-
-  if (close_command && (last_state == "open")) // close shutter command
-  {
-    Serial.println("received close");          // testing only
-
-    close_process();
-    digitalWrite(shutter_status, HIGH) ;       // set the status pin - high is closed
-    last_state = "closed";
+    //Serial.print("Close command = ");
+    //Serial.println(close_command);
+    //delay(500);
 
 
-  }
+    if (open_command && (last_state == "closed"))    // open shutter command
+    {
+      Serial.println("received open");               // testing only print this to sermon when 36 was grounded
+
+      open_shutter() ;
+      digitalWrite(shutter_status, LOW) ;            // set the status pin - low is shutters open
+    }
+
+
+    if (close_command && (last_state == "open")) // close shutter command
+    {
+      Serial.println("received close");          // testing only
+      
+      close_shutter();
+      digitalWrite(shutter_status, HIGH) ;       // set the status pin - high is closed
+
+    }
+
+  }               //endwhile emergency stop loop
 
 } // end void loop ----------------------------------------------------------------------------------------------------------
 
-void initialise_relays() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+void open_shutter()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
-  //  Serial.println( "  Initialising relays ");
-  digitalWrite(FLAPRELAY1,    HIGH) ;
-  digitalWrite(FLAPRELAY2,    HIGH) ;
+  Serial.println("open shutter process");  // testing only
 
-} // end intialise relays ---------------------------------------------------------------------------------------------------
 
-void close_process() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-{
-
-  // flap_close_process();
-  shutter_close_process();
-
-} // end  Close Process ---------------------------------------------------------------------------------------------
-
-void open_process()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-{
-  // Open the shutter first, then the lower flap
-
-  shutter_open_process();
-  // flap_open_process();
-
-}     // end Open Process ----------------------------------------------------------------------------------------------
-
-void shutter_open_process()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-{
-  Serial.println("shutter open process");  // testing only
-  if (close_emergency)
-  {
-    Serial.print("interrupted pos in shutter open process is ");
-    Serial.println(interrupted_position);
-    stepper.setCurrentPosition(interrupted_position);
-    close_emergency = false;
-  }
   stepper.moveTo(openposition);
 
-  measure_and_stop();                            //detect proximity (in steps) to the open position. stop when open
-
-} // end shutter open process -------------------------------------------------------------------------------------
-
-void shutter_close_process() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-{
-  Serial.println("Shutter close Process");          // testing only
-  if (open_emergency)
-  {
-    stepper.setCurrentPosition(interrupted_position);
-    open_emergency = false;
-  }
-
-  stepper.moveTo(closeposition);
-  measure_and_stop();                            //detect proximity (in steps) to the closed position. stop when closed
-
-} // end shutter close process -------------------------------------------------------------------------------------- -
-
-void measure_and_stop()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-{
 
   Serial.print("distance to go function value " );
   Serial.println(stepper.distanceToGo());
 
-  while ((stepper.distanceToGo() != 0)   && (digitalRead( emergency_stop) == LOW)) // if the motor is not there yet, and the emergency stop is not pressed, keep it running
-  {
-    //stepper.currentPosition();
-    stepper.run();
-    //	Serial.println("stepper run...");  // req'd for debug only
 
+  while ( (stepper.distanceToGo() != 0) && (digitalRead(emergency_stop) == LOW) )
+  {
+    stepper.run();
+  }
+
+  //set the open / closed state as follows: If the open process has been interrupted then last_state needs to remain "closed" so that the open command can be used again
+
+  if ((digitalRead(emergency_stop) == HIGH))  // if this is true, the ES was pressed while the shutter was opening
+  {
+    last_state = "closed";
+  }
+  else
+  {
+    last_state = "open";
   }
 
 
-  // Serial.println(" Steps");
   Serial.print("Steper current position is ");
   Serial.println(stepper.currentPosition());
 
-  check_for_emergency_stop();
 
-} // end measure and stop ----------------------------------------------------------------------------------------------
+} // end  open shutter process -------------------------------------------------------------------------------------
 
-void check_for_emergency_stop() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void close_shutter() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
+  Serial.println("Shutter close Process");          // testing only
 
-  // this routine sets the stepper position to either open or closed if the emergency stop is pressed.
+  stepper.moveTo(closeposition);
 
-  if ((digitalRead(emergency_stop) == HIGH) && (last_state == "closed")) // shutter was opening
+
+  Serial.print("distance to go function value " );
+  Serial.println(stepper.distanceToGo());
+
+
+
+  while ( (stepper.distanceToGo() != 0) && (digitalRead(emergency_stop) == LOW) )
   {
-    open_emergency = true;
-    interrupted_position = stepper.currentPosition();
-    stepper.setCurrentPosition(openposition);
+    stepper.run();
   }
+ //set the open / closed state as follows: If the close process has been interrupted then last_state needs to remain "open" so that the close command can be used again
 
-  if ((digitalRead(emergency_stop) == HIGH) && (last_state == "open"))    // shutter was closing
+  if ((digitalRead(emergency_stop) == HIGH))  // if this is true, the ES was pressed while the shutter was closing
   {
-    close_emergency = true;
-    interrupted_position = stepper.currentPosition();
-    stepper.setCurrentPosition(closeposition);
+    last_state = "open";
   }
+  else
+  {
+    last_state = "closed";
+  }
+  Serial.print("Steper current position is ");
+  Serial.println(stepper.currentPosition());
 
-} // end ----------------------------------------------------------------------------------------------
+} // end close shutter process -------------------------------------------------------------------------------------- -
+
+
+//--------------------- below not used yet - coded in readiness for the lower flap motor ------------------------------------
 
 
 void flap_close_process() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -328,3 +282,11 @@ void flap_open_process() // ++++++++++++++++++++++++++++++++++++++++++++++++++++
   initialise_relays();  // TURN THE POWER OFF
 
 } // end void flap_open_process()  ------------------------------------------------------------------------------------
+
+void initialise_relays() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+{
+  //  Serial.println( "  Initialising relays ");
+  digitalWrite(FLAPRELAY1,    HIGH) ;
+  digitalWrite(FLAPRELAY2,    HIGH) ;
+
+} // end intialise relays ---------------------------------------------------------------------------------------------------
