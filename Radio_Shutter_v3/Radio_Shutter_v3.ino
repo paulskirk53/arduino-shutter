@@ -1,3 +1,4 @@
+//Version 1.0 update the variable pkversion too 
 //If open or close is interrupted by an emergency stop button press, just press the same button again e.g. Open/ ES/ Open
 //It has a stepper control for the shutter belt drive and a DC motor control section for the actuator which opens the bottom flap
 //
@@ -55,7 +56,7 @@ bool   close_command        ;
 void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
 
-  Serial.begin(9600);                               // not required outside of testing
+  Serial.begin(19200);                               // not required outside of testing
 
   // Define the pin modes. This avoids pins being low (which activates relays) on power reset.
   // pinmodes for the open, close and emergency stop command pins and the shutter status pin
