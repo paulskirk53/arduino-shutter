@@ -68,7 +68,7 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   pinMode(push_button_open_shutter,   INPUT) ;           //changed from INPUT_PULLUP
   pinMode(push_button_close_shutter,  INPUT_PULLUP) ;
 
-  digitalWrite(shutter_status,   HIGH);             // HIGH means closed
+  digitalWrite(shutter_status,        HIGH);             // HIGH means closed
 
   // pinmodes for flap relays
   // Initialise the Arduino data pins for OUTPUT
