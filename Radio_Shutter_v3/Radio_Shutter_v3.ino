@@ -124,7 +124,8 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //Serial.print("close shutter command pin read gives ");
     //Serial.println(digitalRead(close_shutter_command));
     //delay(500);
-
+    //
+// if either the ascom driver or the manual pushbotton asserts open
     if ( (digitalRead(open_shutter_command) == LOW)  | (digitalRead(push_button_open_shutter) == LOW)) //
     {
       open_command  = true;
