@@ -1,16 +1,16 @@
-//July 9th started removing the flap based code as this is not required for the pulsar dome
+// July 9th '21 started removing the flap based code as this is not required for the pulsar dome
 // this file was a clone done on 9th July from origin so is a working version for the new Pulsar dome.
 // 22-7-21 adding a new function to switch on and of the DC (battery) power to the Shutter stepper
 
 
 
-//If open or close is interrupted by an emergency stop button press, just press the same button again e.g. Open/ ES/ Open
-//It has a stepper control for the shutter belt drive and a DC motor control section for the actuator which opens the bottom flap
+// If open or close is interrupted by an emergency stop button press, just press the same button again e.g. Open/ ES/ Open
+// It has a stepper control for the shutter belt drive and a DC motor control section for the actuator which opens the bottom flap
 //
 // this routine processes commands handed off by the command processor. This means that processes executed here (open close shutter and flap)
 // are non blocking from the ASCOM driver's perspective.
-// flap now refers to the lower flap which hinges outwards
-// this routine receives commands from the radio master arduino - OS# CS# and SS#
+
+// this routine receives commands from the radio master MCU - OS# CS# and SS#
 // data is only returned by SS# - if the shutter is open return char message 'open' or 'closed'
 
 
@@ -87,11 +87,11 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 
-  // delay below introduced to give the command processor time to define its pin states, which are used by this sketch
+  // delay below introduced to give the command processor time to define its pin states, which are used by this program
   //there was a problem where relay 1 (OS) was activated due to indeterminate state of pin 46 as was the thinking.
 
   delay(5000) ;
-  //Serial.println("Shutter Processor ready");
+  
 
 
 }  // end setup -----------------------------------------------------------------------------------------------------------
@@ -103,14 +103,7 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     open_command = false;
     close_command = false;
 
-    // Serial.print("open shutter command pin read gives ");
-    //Serial.println(digitalRead(open_shutter_command));
-
-    //Serial.print("close shutter command pin read gives ");
-    //Serial.println(digitalRead(close_shutter_command));
-    //delay(500);
-    //
-// if either the ascom driver or the manual pushbutton asserts open
+ // if either the ascom driver or the manual pushbutton asserts open
     if ( (digitalRead(open_shutter_command) == LOW)  | (digitalRead(push_button_open_shutter) == LOW)) //
     {
       open_command  = true;
@@ -121,12 +114,7 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       close_command = true;
     }
 
-    //Serial.print("Open command = ");
-    //Serial.println(open_command);
 
-    //Serial.print("Close command = ");
-    //Serial.println(close_command);
-    //delay(500);
 
 
     if (open_command && (last_state == "closed"))    // open shutter command
@@ -157,17 +145,13 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 void open_shutter()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
-  //Serial.println("open shutter process");  // testing only
+  
 
 
   stepper.moveTo(openposition);
 
 
-  //Serial.print("distance to go function value " );
-  //Serial.println(stepper.distanceToGo());
-
-
-  while ( (stepper.distanceToGo() != 0) && (digitalRead(emergency_stop) == LOW) )
+   while ( (stepper.distanceToGo() != 0) && (digitalRead(emergency_stop) == LOW) )
   {
     stepper.run();
   }
@@ -183,23 +167,12 @@ void open_shutter()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     last_state = "open";
   }
 
-
-  //Serial.print("Steper current position is ");
-  //Serial.println(stepper.currentPosition());
-
-
 } // end  open shutter process -------------------------------------------------------------------------------------
 
 void close_shutter() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
-  //Serial.println("Shutter close Process");          // testing only
-
+  
   stepper.moveTo(closeposition);
-
-
-  //Serial.print("distance to go function value " );
-  //Serial.println(stepper.distanceToGo());
-
 
 
   while ( (stepper.distanceToGo() != 0) && (digitalRead(emergency_stop) == LOW) )
@@ -216,9 +189,7 @@ void close_shutter() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   {
     last_state = "closed";
   }
-  //Serial.print("Steper current position is ");
-  //Serial.println(stepper.currentPosition());
-
+ 
 } // end close shutter process -------------------------------------------------------------------------------------- -
 
 void PowerOn()                          // Arse set the power SSR gate high
