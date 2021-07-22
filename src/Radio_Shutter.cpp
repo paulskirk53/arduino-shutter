@@ -1,5 +1,6 @@
 //July 9th started removing the flap based code as this is not required for the pulsar dome
 // this file was a clone done on 9th July from origin so is a working version for the new Pulsar dome.
+// 22-7-21 adding a new function to switch on and of the DC (battery) power to the Shutter stepper
 
 
 
@@ -16,6 +17,8 @@
 #include "Radio_shutter.h"
 // Compiler declarations follow
 
+//power management for shutter stepper
+//#define power_pin    xx
 
 
 // step, dir and enable pin definitions
@@ -64,7 +67,9 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   pinMode(push_button_close_shutter,  INPUT_PULLUP) ;
 
   digitalWrite(shutter_status,        HIGH);             // HIGH means closed
-
+// pinmode for DC power management of the Shutter Stepper
+  pinMode (power_pin OUTPUT);
+  digitalWrite(power_pin,             LOW);              // power will be off when the setup routine executes
   
   //stepper setup:
   StepsPerSecond     = 500.0 ;                   // changed following empirical testing
@@ -212,3 +217,10 @@ void close_shutter() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //Serial.println(stepper.currentPosition());
 
 } // end close shutter process -------------------------------------------------------------------------------------- -
+void PowerOn()
+{
+
+}void PowerOff()
+{
+
+}
