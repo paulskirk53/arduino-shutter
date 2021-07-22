@@ -8,3 +8,5 @@ void close_shutter();
 void flap_close_process();
 void flap_open_process();
 void initialise_relays() ;
+void PowerOn();
+void PowerOff();

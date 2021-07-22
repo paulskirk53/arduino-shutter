@@ -18,7 +18,7 @@
 // Compiler declarations follow
 
 //power management for shutter stepper
-#define power_pin            9              //added the pin on 22-7-21
+#define power_pin             9             // added the pin on 22-7-21
 
 
 // step, dir and enable pin definitions
@@ -67,9 +67,10 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   pinMode(push_button_close_shutter,  INPUT_PULLUP) ;
 
   digitalWrite(shutter_status,        HIGH);             // HIGH means closed
+
 // pinmode for DC power management of the Shutter Stepper
-  pinMode (power_pin OUTPUT);
-  digitalWrite(power_pin,             LOW);              // power will be off when the setup routine executes
+  pinMode (power_pin,                 OUTPUT);
+  digitalWrite(power_pin,             LOW);              // Arse power will be off when the setup routine executes
 
   //stepper setup:
   StepsPerSecond     = 500.0 ;                   // changed following empirical testing
@@ -131,18 +132,20 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     if (open_command && (last_state == "closed"))    // open shutter command
     {
       // Serial.println("received open");               // testing only print this to sermon when 36 was grounded
-
+      PowerOn();                                        // arse power on to the stepper
       open_shutter() ;
-      digitalWrite(shutter_status, LOW) ;            // set the status pin - low is shutters open
+      PowerOff();                                       // arse power off to the stepper
+      digitalWrite(shutter_status, LOW) ;               // set the status pin - low is shutters open
     }
 
 
     if (close_command && (last_state == "open")) // close shutter command
     {
-      // Serial.println("received close");          // testing only
-      
+      // Serial.println("received close");              // testing only
+      PowerOn();                                        // arse power on to the stepper
       close_shutter();
-      digitalWrite(shutter_status, HIGH) ;       // set the status pin - high is closed
+      PowerOff();                                       // arse power off to the stepper
+      digitalWrite(shutter_status, HIGH) ;              // set the status pin - high is closed
 
     }
 
@@ -217,10 +220,13 @@ void close_shutter() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //Serial.println(stepper.currentPosition());
 
 } // end close shutter process -------------------------------------------------------------------------------------- -
-void PowerOn()
-{
 
-}void PowerOff()
+void PowerOn()                          // Arse set the power SSR gate high
 {
+digitalWrite(power_pin,      HIGH);
+}
 
+void PowerOff()                          // Arse set the power SSR gate low
+{
+digitalWrite(power_pin,      LOW);
 }
