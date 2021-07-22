@@ -18,13 +18,13 @@
 // Compiler declarations follow
 
 //power management for shutter stepper
-//#define power_pin    xx
+#define power_pin            9              //added the pin on 22-7-21
 
 
 // step, dir and enable pin definitions
 #define stepPin               7             // step pin tested and works - motor moves
 #define dirPin                8
-#define enaPin                9             // presently n/c - the enable pin
+
 
 // create the stepper instance
 AccelStepper  stepper(AccelStepper::DRIVER, stepPin, dirPin, true);
@@ -70,7 +70,7 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // pinmode for DC power management of the Shutter Stepper
   pinMode (power_pin OUTPUT);
   digitalWrite(power_pin,             LOW);              // power will be off when the setup routine executes
-  
+
   //stepper setup:
   StepsPerSecond     = 500.0 ;                   // changed following empirical testing
   normalAcceleration = 50     ;                  // changed following empirical testing
