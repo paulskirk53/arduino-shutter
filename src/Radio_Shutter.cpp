@@ -195,9 +195,11 @@ void close_shutter() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void PowerOn()                          // Arse set the power SSR gate high
 {
 digitalWrite(power_pin,      HIGH);
+
+delay(2000);                            // gives time for the MA860H unit to power on and stabilise
 }
 
-void PowerOff()                          // Arse set the power SSR gate low
+void PowerOff()                         // Arse set the power SSR gate low
 {
 digitalWrite(power_pin,      LOW);
 }
