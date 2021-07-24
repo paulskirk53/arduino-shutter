@@ -10,3 +10,4 @@ void flap_open_process();
 void initialise_relays() ;
 void PowerOn();
 void PowerOff();
+void Check_if_Raining();
