@@ -38,7 +38,7 @@ AccelStepper  stepper(AccelStepper::DRIVER, stepPin, dirPin, true);
 #define shutter_status            48             // OUTPUT pin
 #define push_button_open_shutter  52             // green to hand control switch unit
 #define push_button_close_shutter 53             // blue to hand control switch unit
-#define Rain_Monitor              11             // Arse rain monitor pin
+#define Rain_Monitor              11             //  rain monitor pin
 
 String last_state           ;
 long   openposition         ;
@@ -71,8 +71,8 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // pinmode for DC power management of the Shutter Stepper
   pinMode (power_pin,                 OUTPUT);
-  digitalWrite(power_pin,             LOW);              // Arse power will be off when the setup routine executes
-  pinMode(Rain_Monitor,               INPUT_PULLUP);     //Arse the rain monitor is active low 
+  digitalWrite(power_pin,             LOW);              //  power will be off when the setup routine executes
+  pinMode(Rain_Monitor,               INPUT_PULLUP);     // the rain monitor is active low 
 
   //stepper setup:
   StepsPerSecond     = 500.0 ;                   // changed following empirical testing
@@ -122,9 +122,9 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     if (open_command && (last_state == "closed"))       // open shutter command
     {
       // Serial.println("received open");               // testing only print this to sermon when 36 was grounded
-      PowerOn();                                        // arse power on to the stepper
+      PowerOn();                                        //  power on to the stepper
       open_shutter() ;
-      PowerOff();                                       // arse power off to the stepper
+      PowerOff();                                       //  power off to the stepper
       digitalWrite(shutter_status, LOW) ;               // set the status pin - low is shutters open
     }
 
@@ -132,19 +132,19 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     if (close_command && (last_state == "open"))        // close shutter command
     {
       // Serial.println("received close");              // testing only
-      PowerOn();                                        // arse power on to the stepper
+      PowerOn();                                        // power on to the stepper
       close_shutter();
-      PowerOff();                                       // arse power off to the stepper
+      PowerOff();                                       // power off to the stepper
       digitalWrite(shutter_status, HIGH) ;              // set the status pin - high is closed
 
     }
 
   }               //endwhile emergency stop loop
 
-   // Arse put code here for the rain Arse sensor Arse
+   // put code here for the rain sensor 
    // this code should only run if the shutter is open
    // NB this code is unaffected by the emergency STOP if it's required to have it within the context of the ES
-   // put it before the 'endwhile emergency stop loop' brace Arse
+   // put it before the 'endwhile emergency stop loop' brace 
 
 Check_if_Raining();
      
@@ -204,14 +204,14 @@ void close_shutter() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  
 } // end close shutter process -------------------------------------------------------------------------------------- -
 
-void PowerOn()                          // Arse set the power SSR gate high
+void PowerOn()                          // set the power SSR gate high
 {
 digitalWrite(power_pin,      HIGH);
 
 delay(2000);                            // gives time for the MA860H unit to power on and stabilise
 }
 
-void PowerOff()                         // Arse set the power SSR gate low
+void PowerOff()                         // set the power SSR gate low
 {
 digitalWrite(power_pin,      LOW);
 }
