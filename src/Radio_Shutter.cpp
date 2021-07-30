@@ -17,9 +17,10 @@
 #include "Radio_Shutter.h"
 // Compiler declarations follow
 
-//power management for shutter stepper
+// power management for shutter stepper controller - MA860H - this is via the SS relay
+// and the power for the rain sensor device - this only draws 8 mA so can easily be powered from a pin 
 #define power_pin             9             // added the pin on 22-7-21
-
+#define SensorPower           10            // added 30-7-21
 
 // step, dir and enable pin definitions
 #define stepPin               7             // step pin tested and works - motor moves
@@ -30,7 +31,7 @@
 AccelStepper  stepper(AccelStepper::DRIVER, stepPin, dirPin, true);
 
 
-// more pin definitions
+// Data pin definitions
 
 #define open_shutter_command      36             // input pin
 #define close_shutter_command     47             // input pin
@@ -38,7 +39,7 @@ AccelStepper  stepper(AccelStepper::DRIVER, stepPin, dirPin, true);
 #define shutter_status            48             // OUTPUT pin
 #define push_button_open_shutter  52             // green to hand control switch unit
 #define push_button_close_shutter 53             // blue to hand control switch unit
-#define Rain_Monitor              11             //  rain monitor pin
+#define Rain_Monitor              11             //  rain monitor data pin
 
 String last_state           ;
 long   openposition         ;
@@ -72,7 +73,10 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // pinmode for DC power management of the Shutter Stepper
   pinMode (power_pin,                 OUTPUT);
   digitalWrite(power_pin,             LOW);              //  power will be off when the setup routine executes
-  pinMode(Rain_Monitor,               INPUT_PULLUP);     // the rain monitor is active low 
+  pinMode(Rain_Monitor,               INPUT_PULLUP);     //  the rain monitor is active low 
+  pinMode (SensorPower,               OUTPUT);
+  digitalWrite(SensorPower,           LOW);              // this pin acts as a power supply for the rain sensor device. 
+  // Power should only be on when testing for rain to avoid corrosion of the sensor pad.
 
   //stepper setup:
   StepsPerSecond     = 500.0 ;                   // changed following empirical testing
@@ -158,7 +162,8 @@ Check_if_Raining();
 void open_shutter()  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
   
-
+// turn on the rain sensor device power, so that it is live whilst the shutter is open
+  digitalWrite(SensorPower,             HIGH);    
 
   stepper.moveTo(openposition);
 
@@ -201,7 +206,9 @@ void close_shutter() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   {
     last_state = "closed";
   }
- 
+ // turn off the rain sensor device power, so that it is unpowered whilst the shutter is closed.
+ digitalWrite(SensorPower,             LOW);    
+
 } // end close shutter process -------------------------------------------------------------------------------------- -
 
 void PowerOn()                          // set the power SSR gate high
@@ -222,9 +229,10 @@ void Check_if_Raining()
      {
        PowerOn();
        close_shutter();
-       PowerOff();
+       PowerOff();                                  //this is the MA860H shutter driver power
+                                                    // also turn off the SensorPower
        last_state = "closed";
-       digitalWrite(shutter_status, HIGH) ;              // set the status pin - high is closed
+       digitalWrite(shutter_status, HIGH) ;         // set the status pin - high is closed
 
      }
 }
