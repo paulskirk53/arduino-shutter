@@ -1,6 +1,7 @@
 // July 9th '21 started removing the flap based code as this is not required for the pulsar dome
 // this file was a clone done on 9th July from origin so is a working version for the new Pulsar dome.
 // 22-7-21 adding a new function to switch on and of the DC (battery) power to the Shutter stepper
+// 30-7-21 adding in a rain sensor
 
 
 
@@ -49,7 +50,7 @@ int    normalAcceleration   ;
 float  StepsPerSecond       ;
 bool   open_command         ;
 bool   close_command        ;
-
+bool   rainSensorEnable = true;
 
 // end declarations -------------------------------------------------------------------------------------------------------
 
@@ -225,7 +226,7 @@ digitalWrite(power_pin,      LOW);
 
 void Check_if_Raining()
 {
-  if (digitalRead(Rain_Monitor ==LOW) && (last_state == "open"))    //if we're open and it's raining....
+  if (  (digitalRead(Rain_Monitor) ==LOW) && (last_state == "open")  )    //if we're open and it's raining....
      {
        PowerOn();
        close_shutter();
