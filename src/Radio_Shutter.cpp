@@ -208,7 +208,7 @@ void close_shutter() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     last_state = "closed";
   }
  // turn off the rain sensor device power, so that it is unpowered whilst the shutter is closed.
- digitalWrite(SensorPower,             LOW);    
+ digitalWrite(SensorPower,             LOW);    //turn off power to sensor to avoid undue corrosion
 
 } // end close shutter process -------------------------------------------------------------------------------------- -
 
@@ -231,7 +231,7 @@ void Check_if_Raining()
        PowerOn();
        close_shutter();
        PowerOff();                                  //this is the MA860H shutter driver power
-                                                    // also turn off the SensorPower
+                                                    // also turn off the SensorPower - this action is in he shutter close routine
        last_state = "closed";
        digitalWrite(shutter_status, HIGH) ;         // set the status pin - high is closed
 
