@@ -143,15 +143,11 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       digitalWrite(shutter_status, HIGH) ;              // set the status pin - high is closed
 
     }
+    Check_if_Raining(); 
 
   }               //endwhile emergency stop loop
 
-   // put code here for the rain sensor 
-   // this code should only run if the shutter is open
-   // NB this code is unaffected by the emergency STOP if it's required to have it within the context of the ES
-   // put it before the 'endwhile emergency stop loop' brace 
-
-Check_if_Raining();
+  // execution does not get here unless ES is button is pressed
      
 }
 
