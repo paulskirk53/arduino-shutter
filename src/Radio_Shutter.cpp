@@ -123,7 +123,6 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 
-
     if (open_command && (last_state == "closed"))       // open shutter command
     {
       // Serial.println("received open");               // testing only print this to sermon when 36 was grounded
