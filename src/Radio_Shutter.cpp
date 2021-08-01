@@ -1,7 +1,9 @@
+// This code uploaded to the Shutter MCU on 31st July 2021 - tested with hand controller
+
 // July 9th '21 started removing the flap based code as this is not required for the pulsar dome
 // this file was a clone done on 9th July from origin so is a working version for the new Pulsar dome.
-// 22-7-21 adding a new function to switch on and of the DC (battery) power to the Shutter stepper
-// 30-7-21 adding in a rain sensor
+// 22-7-21 adding a new function to switch on and of the DC (battery) power to the Shutter stepper - tested and works
+// 30-7-21 adding in a rain sensor - tested and works 
 
 
 
