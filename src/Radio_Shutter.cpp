@@ -8,9 +8,8 @@
 
 
 // If open or close is interrupted by an emergency stop button press, just press the same button again e.g. Open/ ES/ Open
-// It has a stepper control for the shutter belt drive and a DC motor control section for the actuator which opens the bottom flap
-//
-// this routine processes commands handed off by the command processor. This means that processes executed here (open close shutter and flap)
+
+// this routine processes commands handed off by the command processor. This means that processes executed here (open / close shutter )
 // are non blocking from the ASCOM driver's perspective.
 
 // this routine receives commands from the radio master MCU - OS# CS# and SS#
@@ -53,6 +52,8 @@ float  StepsPerSecond       ;
 bool   open_command         ;
 bool   close_command        ;
 bool   rainSensorEnable = true;
+bool   powerOnFlag          ;
+unsigned long   powerOnStartTime     ;
 
 // end declarations -------------------------------------------------------------------------------------------------------
 
@@ -97,7 +98,7 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
   // delay below introduced to give the command processor time to define its pin states, which are used by this program
-  //there was a problem where relay 1 (OS) was activated due to indeterminate state of pin 46 as was the thinking.
+  
 
   delay(5000) ;
   
@@ -109,6 +110,15 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
   while (digitalRead(emergency_stop) == LOW)    // the ES is normally low and goes open circuit (HIGH) when pressed.
   {
+
+    //todo - monitor the poweron timer flag. if the power has been on for more than the set time period, turn it off
+if (powerOnFlag)
+{
+  if ( (millis() - powerOnStartTime) > 30000 )
+  {
+    PowerOff();
+  }
+}
     open_command  = false;
     close_command = false;
 
@@ -212,13 +222,15 @@ void close_shutter() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void PowerOn()                          // set the power SSR gate high
 {
 digitalWrite(power_pin,      HIGH);
-
+//todo start the poweron timer - add code below
+powerOnFlag = true;
 delay(2000);                            // gives time for the MA860H unit to power on and stabilise
 }
 
 void PowerOff()                         // set the power SSR gate low
 {
 digitalWrite(power_pin,      LOW);
+powerOnFlag = false ;
 }
 
 void Check_if_Raining()
