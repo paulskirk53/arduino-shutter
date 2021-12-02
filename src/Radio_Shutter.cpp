@@ -2,7 +2,7 @@
 
 // July 9th '21 started removing the flap based code as this is not required for the pulsar dome
 // this file was a clone done on 9th July from origin so is a working version for the new Pulsar dome.
-// 22-7-21 adding a new function to switch on and of the DC (battery) power to the Shutter stepper - tested and works
+// 22-7-21 adding a new function to switch on and off the DC (battery) power to the Shutter stepper - tested and works
 // 30-7-21 adding in a rain sensor - tested and works
 
 // If open or close is interrupted by an emergency stop button press, just press the same button again e.g. Open/ ES/ Open
