@@ -18,11 +18,11 @@
 
 // power management for shutter stepper controller - MA860H - this is via the SS relay
 // and the power for the rain sensor device - this only draws 8 mA so can easily be powered from a pin
-#define power_pin 9    // added the pin on 22-7-21
-#define SensorPower 10 // added 30-7-21
+#define power_pin 9                     // this drives the gate of the SSR40DD device to turn on the power to the motor which opens / closes the shutter added the pin on 22-7-21
+#define SensorPower 10                  // rain sesnor power pin added 30-7-21
 
 // step, dir and enable pin definitions
-#define stepPin 7 // step pin tested and works - motor moves
+#define stepPin 7                       // step pin tested and works - motor moves
 #define dirPin 8
 
 // create the stepper instance
@@ -32,10 +32,10 @@ AccelStepper stepper(AccelStepper::DRIVER, stepPin, dirPin, true);
 
 #define open_shutter_command 36      // input pin
 #define close_shutter_command 47     // input pin
-#define emergency_stop 30            // input pin
+#define emergency_stop 30            // input pin   green (mcu side ) blue on HC side
 #define shutter_status 48            // OUTPUT pin
-#define push_button_open_shutter 52  // green to hand control switch unit
-#define push_button_close_shutter 53 // blue to hand control switch unit
+#define push_button_open_shutter 52  // mauve (MCU side) to green (HC cable side) to hand control switch unit
+#define push_button_close_shutter 53 // blue (MCU side) to yellow (HC cable side) hand control switch unit
 #define Rain_Monitor 11              //  rain monitor data pin
 #define on true
 #define off false
@@ -45,15 +45,15 @@ long openposition;
 long closeposition;
 
 int normalAcceleration;
-float StepsPerSecond;
+float StepsPerSecond;                 // has to be this type as per library
 bool open_command;
 bool close_command;
 bool rainSensorEnable;
 
 bool powerOnFlag;
 unsigned long powerOnStartTime;
-unsigned long powerOnDuration;
-
+unsigned long powerOnDuration;       // this is a failsafe for the shutter opening motor - ha ha haha ha haha ha haha ha haha ha haha ha haha ha haha ha ha ha ha haha ha haha ha ha
+//ha ha haha ha haha ha haha ha haha ha haha ha haha ha haha ha haha ha haha ha haha ha haha ha haha ha ha he he he ha ha ha hoo hoo hoo ha ha eyes watering ha ha ha
 // end declarations -------------------------------------------------------------------------------------------------------
 
 void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
