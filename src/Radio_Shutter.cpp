@@ -1,4 +1,4 @@
-// This code uploaded to the Shutter MCU on 31st July 2021 - tested with hand controller
+
 
 // July 9th '21 started removing the flap based code as this is not required for the pulsar dome
 // this file was a clone done on 9th July from origin so is a working version for the new Pulsar dome.
@@ -37,6 +37,7 @@ AccelStepper stepper(AccelStepper::DRIVER, stepPin, dirPin, true);
 #define push_button_open_shutter 52  // mauve (MCU side) to green (HC cable side) to hand control switch unit
 #define push_button_close_shutter 53 // blue (MCU side) to yellow (HC cable side) hand control switch unit
 #define Rain_Monitor 11              //  rain monitor data pin
+#define MCU_reset    13              // this is pulled LOW by the command processor to reset this cpu
 #define on true
 #define off false
 
@@ -63,6 +64,7 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   // Define the pin modes. This avoids pins being low (which activates relays) on power reset.
   // pinmodes for the open, close and emergency stop command pins and the shutter status pin
+  pinMode (MCU_reset, INPUT_PULLUP);
   pinMode(open_shutter_command, INPUT_PULLUP);
   pinMode(close_shutter_command, INPUT_PULLUP);
   pinMode(emergency_stop, INPUT_PULLUP); // user push button to stop the motor
@@ -108,6 +110,12 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   while (digitalRead(emergency_stop) == LOW) // the ES is normally low and goes to the power rail via a pullup (HIGH) when pressed.
   {
 
+    if ( digitalRead(MCU_reset) == LOW )
+    {
+      while(1)
+      {}       //causes the WDT to reset the MCU
+    }
+
     // monitor the poweron timer flag. if the power has been on for more than the set time period, turn it off
     if (powerOnFlag)
     {
@@ -151,19 +159,28 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     Check_if_Raining();
 
+    // kick the dog if the MCU_reset pin is high. If the pin has gone LOW, then the command processor MCU has issued a reset command
+    dogkick();
 
-
-    wdt_reset();                       //execute this command within 4 seconds to keep the timer from resetting the CPU
   } // endwhile emergency stop loop
 
   // execution does not get here unless ES is button is pressed
 
-  wdt_reset();                       //execute this command within 4 seconds to keep the timer from resetting
+   // kick the dog if the MCU_reset pin is high. If the pin has gone LOW, then the command processor MCU has issued a reset command
+    dogkick();
 
 }
 
-// end void loop ----------------------------------------------------------------------------------------------------------
 
+
+// end void loop ----------------------------------------------------------------------------------------------------------
+void dogkick()
+{
+    if ( digitalRead(MCU_reset == HIGH)  )
+    {
+     wdt_reset();                       //execute this command within 4 seconds to keep the timer from resetting the CPU
+    }
+}
 void open_shutter() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
 

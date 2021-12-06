@@ -3,6 +3,7 @@
 #include <SoftwareSerial.h>
 #include <AccelStepper.h>
 
+void dogkick();
 void open_shutter();
 void close_shutter();
 void flap_close_process();
