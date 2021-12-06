@@ -99,8 +99,8 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   delay(5000);
 
-  wdt_enable(WDTO_4S);                 //Watchdog set to 4 seconds
-
+  wdt_enable(WDTO_4S);                 //Watchdog set to 4 seconds note this statement is placed after the delay
+  // Note there is a 2 second delay in the poweron() routine, so 4 seconds seems reasonable for the wdt.
 } // end setup -----------------------------------------------------------------------------------------------------------
 
 void loop() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
