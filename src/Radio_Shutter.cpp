@@ -12,7 +12,7 @@
 
 // this routine receives commands from the radio master MCU - OS# CS# and SS#
 // data is only returned by SS# - if the shutter is open return char message 'open' or 'closed'
-
+#include <avr/wdt.h>            //implement the watchdog timer
 #include "Radio_Shutter.h"
 // Compiler declarations follow
 
@@ -99,11 +99,13 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   delay(5000);
 
+  wdt_enable(WDTO_4S);                 //Watchdog set to 4 seconds
+
 } // end setup -----------------------------------------------------------------------------------------------------------
 
 void loop() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
-  while (digitalRead(emergency_stop) == LOW) // the ES is normally low and goes open circuit (HIGH) when pressed.
+  while (digitalRead(emergency_stop) == LOW) // the ES is normally low and goes to the power rail via a pullup (HIGH) when pressed.
   {
 
     // monitor the poweron timer flag. if the power has been on for more than the set time period, turn it off
@@ -145,11 +147,19 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       PowerOff();                         // power off to the stepper
       digitalWrite(shutter_status, HIGH); // set the status pin - high is closed
     }
+
+
     Check_if_Raining();
 
+
+
+    wdt_reset();                       //execute this command within 4 seconds to keep the timer from resetting the CPU
   } // endwhile emergency stop loop
 
   // execution does not get here unless ES is button is pressed
+
+  wdt_reset();                       //execute this command within 4 seconds to keep the timer from resetting
+
 }
 
 // end void loop ----------------------------------------------------------------------------------------------------------
