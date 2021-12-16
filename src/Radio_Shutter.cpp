@@ -16,6 +16,8 @@
 // data is only returned by SS# - if the shutter is open return char message 'open' or 'closed'
 #include <avr/wdt.h>            //implement the watchdog timer
 #include "Radio_Shutter.h"
+#include <avr/eeprom.h>
+
 // Compiler declarations follow
 
 // power management for shutter stepper controller - MA860H - this is via the SS relay
