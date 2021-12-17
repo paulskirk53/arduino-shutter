@@ -218,7 +218,7 @@ void open_shutter() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   
 
-  while ( ( stepper.distanceToGo()  > 0) && (digitalRead(emergency_stop) == LOW))
+  while ( ( stepper.distanceToGo()  != 0) && (digitalRead(emergency_stop) == LOW))
   {
     stepper.run();
     checkPowerOnTime();            // the time was set just before this routine was called
