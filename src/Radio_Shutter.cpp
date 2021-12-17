@@ -1,3 +1,4 @@
+//DEBUG - JUST NEED TO ALTER the poweronduration in line 104 set it to 10000 (10 secs) and see that it works as ecpected to turn off the power
 
 
 //December '21 wdt added BUT the shutter takes about 30 seconds to close, with the stepper.run in a while loop with no no dogkick
@@ -65,9 +66,8 @@ unsigned long powerOnDuration;       // this is a failsafe for the shutter openi
 void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
 
-  // Serial.begin(19200);                               // not required outside of testing
+   Serial.begin(9600);                               // not required outside of testing
 
-  // Define the pin modes. This avoids pins being low (which activates relays) on power reset.
   // pinmodes for the open, close and emergency stop command pins and the shutter status pin
   pinMode (MCU_reset, INPUT_PULLUP);
   pinMode(open_shutter_command, INPUT_PULLUP);
@@ -95,7 +95,7 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   stepper.setMaxSpeed(StepsPerSecond); // steps per second see below -
   // if the controller electronics is set to 0.25 degree steps, 15 stepspersecond*0.25= 3.75 degrees of shaft movement per second
   stepper.setAcceleration(normalAcceleration);
-  stepper.setCurrentPosition(closeposition); // initial position for stepper is closed
+  stepper.setCurrentPosition(closeposition); // Zero position for stepper is closed - see accelstepper lib.
 
   last_state       = "closed";    //this is an assumption which may not be true, especially if wdt resets
   openposition     = 3300; // was set to 4000 which was a bit too high. Changed December 2021
@@ -120,6 +120,7 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     PowerOn();
     close_shutter();    // note an amendment to the while loop condition in close shutter needs to be checked for Hall sensor logic - is closed HIGH or LOW?
     PowerOff();
+    stepper.setCurrentPosition(closeposition);    //starting point is closed
 
   }
 
@@ -140,13 +141,10 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     }
 
     // monitor the poweron timer flag. if the power has been on for more than the set time period, turn it off
-    if (powerOnFlag)
-    {
-      if ((millis() - powerOnStartTime) > powerOnDuration) // if the power to the shutter mechanism has been on past the limit allowed, turn the bast off
-      {
-        PowerOff();
-      }
-    }
+    
+
+    //checkPowerOnTime();
+
     open_command = false;
     close_command = false;
 
@@ -163,20 +161,22 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     if (open_command && (last_state == "closed")) // open shutter command
     {
-      // Serial.println("received open");               // testing only print this to sermon when 36 was grounded
-      PowerOn(); //  power on to the stepper
+      // Serial.println("received open");      //  testing only print this to sermon when 36 was grounded
+      PowerOn();                               //  power on to the stepper
+      powerOnStartTime = millis();             //  start the power on timer
       open_shutter();
-      PowerOff();                        //  power off to the stepper
-      digitalWrite(shutter_status, LOW); // set the status pin - low is shutters open
+      PowerOff();                              //  power off to the stepper
+      digitalWrite(shutter_status, LOW);       //  set the status pin - low is shutter open
     }
 
-    if (close_command && (last_state == "open")) // close shutter command
+    if (close_command && (last_state == "open"))  // close shutter command
     {
-      // Serial.println("received close");              // testing only
-      PowerOn(); // power on to the stepper
+      // Serial.println("received close");     // testing only
+      PowerOn();                               // power on to the stepper
+      powerOnStartTime = millis();             // start the power on timer
       close_shutter();
-      PowerOff();                         // power off to the stepper
-      digitalWrite(shutter_status, HIGH); // set the status pin - high is closed
+      PowerOff();                              // power off to the stepper
+      digitalWrite(shutter_status, HIGH);      // set the status pin - high is closed
     }
 
 
@@ -194,9 +194,8 @@ void loop() // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 }
 
-
-
 // end void loop ----------------------------------------------------------------------------------------------------------
+
 void dogkick()
 {
         
@@ -206,14 +205,24 @@ void dogkick()
 void open_shutter() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
 
+  stepper.moveTo(openposition);            // set the position for the motor  destination in steps
+
+  //TODO REMOVE LINES X 4 BELOW
+  Serial.println("In OPEN  routine ");
+  Serial.println("CURRENT position is  " + String(stepper.currentPosition())   );
+  Serial.println("moveto position is " + String(openposition));
+  Serial.println("distance to go is  " + String(stepper.distanceToGo())   );
+
   // turn on the rain sensor device power, so that it is live whilst the shutter is open
   digitalWrite(SensorPower, HIGH);
 
-  stepper.moveTo(openposition);
+  
 
-  while ((stepper.distanceToGo() != 0) && (digitalRead(emergency_stop) == LOW))
+  while ( ( stepper.distanceToGo()  > 0) && (digitalRead(emergency_stop) == LOW))
   {
     stepper.run();
+    checkPowerOnTime();            // the time was set just before this routine was called
+    wdt_reset();
   }
 
   // set the open / closed state as follows: If the open process has been interrupted then last_state needs to remain "closed" so that the open command can be used again
@@ -234,9 +243,17 @@ void close_shutter() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   stepper.moveTo(closeposition);
 
-  while ((stepper.distanceToGo() != 0) && (digitalRead(emergency_stop) == LOW)  && ( digitalRead(closedSensor_pin) == HIGH)   )  // Pin is HIGH while the shutter is OPEN
+  //todo remove serial prints x 4 below
+Serial.println("In close routine ");
+Serial.println("CURRENT position is  " + String(stepper.currentPosition())   );
+Serial.println("moveto position is " + String(closeposition));
+Serial.println("distance to go is  " + String(stepper.distanceToGo())   );
+
+  while (   (stepper.distanceToGo()  != 0) && (digitalRead(emergency_stop) == LOW)  && ( digitalRead(closedSensor_pin) == HIGH)   )  // Pin is HIGH while the shutter is OPEN
   {
     stepper.run();
+    checkPowerOnTime();             // the time was set just before this routine was called
+    wdt_reset();
   }
   // set the open / closed state as follows: If the close process has been interrupted then last_state needs to remain "open" so that the close command can be used again
 
@@ -259,6 +276,7 @@ void PowerOn() // set the power SSR gate high
   // set the poweron timer flag
   powerOnFlag = on;
   delay(2000); // gives time for the MA860H unit to power on and stabilise
+  wdt_reset();
 }
 
 void PowerOff() // set the power SSR gate low
@@ -278,4 +296,15 @@ void Check_if_Raining()
     last_state = "closed";
     digitalWrite(shutter_status, HIGH); // set the status pin - high is closed
   }
+}
+
+void checkPowerOnTime()
+{
+  if (powerOnFlag)
+    {
+      if ((millis() - powerOnStartTime) > powerOnDuration) // if the power to the shutter mechanism has been on past the limit allowed, turn the bast off
+      {
+        PowerOff();
+      }
+    }
 }

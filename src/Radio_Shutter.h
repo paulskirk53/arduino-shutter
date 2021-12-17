@@ -12,3 +12,4 @@ void initialise_relays() ;
 void PowerOn();
 void PowerOff();
 void Check_if_Raining();
+void checkPowerOnTime();
