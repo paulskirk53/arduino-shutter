@@ -255,6 +255,11 @@ Serial.println("distance to go is  " + String(stepper.distanceToGo())   );
     checkPowerOnTime();             // the time was set just before this routine was called
     wdt_reset();
   }
+  // the motor will be stopped because of one of the conditions in the while loop above, so set the current position to closed
+  // if we don't do this, when close is terminated by the microswitch the code still has distance to travel  in the closing sense
+  // which fouls up a subsequent 'open' command.
+  
+  stepper.setCurrentPosition(closeposition);   // essentially sets distance to go to zero
   // set the open / closed state as follows: If the close process has been interrupted then last_state needs to remain "open" so that the close command can be used again
 
   if ((digitalRead(emergency_stop) == HIGH)) // if this is true, the ES was pressed while the shutter was closing
