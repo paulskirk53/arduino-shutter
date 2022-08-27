@@ -98,7 +98,7 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   stepper.setCurrentPosition(closeposition); // Zero position for stepper is closed - see accelstepper lib.
 
   last_state       = "closed";    //this is an assumption which may not be true, especially if wdt resets
-  openposition     = 3300; // was set to 4000 which was a bit too high. Changed December 2021
+  openposition     = 6700; // was set to 3300 which was a bit too high. Changed December 2021
   
   rainSensorEnable = true;
   powerOnDuration  = 30000; // 30 seconds
