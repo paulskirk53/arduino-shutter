@@ -97,8 +97,8 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   stepper.setAcceleration(normalAcceleration);
   stepper.setCurrentPosition(closeposition); // Zero position for stepper is closed - see accelstepper lib.
 
-  last_state       = "closed";    //this is an assumption which may not be true, especially if wdt resets
-  openposition     = 6700; // was set to 3300 which was a bit too high. Changed December 2021
+  last_state       = "closed";      // this is an assumption which may not be true, especially if wdt resets
+  openposition     = 6700;          // was set to 3300 which was a bit too high. Changed December 2021
   
   rainSensorEnable = true;
   powerOnDuration  = 30000; // 30 seconds
@@ -127,6 +127,7 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   wdt_enable(WDTO_4S);                 //Watchdog set to 4 seconds note this statement is placed after the delay
   // Note there is a 2 second delay in the poweron() routine, so 4 seconds seems reasonable for the wdt.
+  Serial.println("resetting");
 } // end setup -----------------------------------------------------------------------------------------------------------
 
 void loop() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
