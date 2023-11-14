@@ -65,6 +65,10 @@ unsigned long powerOnDuration;       // this is a failsafe for the shutter openi
 
 void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
+  
+// note that in the event of emergency stop request from ASCOM, that is implemented by causing the shutter
+// mcu to reset and that causes this setup() routine to execute. Note therefore that if ASCOM emergency stop 
+// is requested and the shutter is open or partway open, the code here senses that and causes the shutter to close.
 
    Serial.begin(9600);                               // not required outside of testing
 
@@ -118,7 +122,7 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     stepper.setCurrentPosition(openposition);  // assume worst case of shutter fully open
     PowerOn();
-    close_shutter();    // note an amendment to the while loop condition in close shutter needs to be checked for Hall sensor logic - is closed HIGH or LOW?
+    close_shutter();    
     PowerOff();
     stepper.setCurrentPosition(closeposition);    //starting point is closed
 
