@@ -90,7 +90,7 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   // stepper setup:
   closeposition    = 0;
-  StepsPerSecond = 500.0;              // changed following empirical testing
+  StepsPerSecond = 250.0;              // changed following empirical testing
   normalAcceleration = 50;             // changed following empirical testing
   stepper.setMaxSpeed(StepsPerSecond); // steps per second see below -
   // if the controller electronics is set to 0.25 degree steps, 15 stepspersecond*0.25= 3.75 degrees of shaft movement per second
@@ -98,7 +98,7 @@ void setup() // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   stepper.setCurrentPosition(closeposition); // Zero position for stepper is closed - see accelstepper lib.
 
   last_state       = "closed";      // this is an assumption which may not be true, especially if wdt resets
-  openposition     = 6700;          // was set to 3300 which was a bit too high. Changed December 2021
+  openposition     = 2000;          // was set to 6700 which was too high when driver steps per rev was changed
   
   rainSensorEnable = true;
   powerOnDuration  = 30000; // 30 seconds
